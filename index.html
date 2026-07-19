@@ -392,16 +392,71 @@ customerNameInput.addEventListener('input', () => {
 
 document.getElementById('saveBtn').addEventListener('click', saveReceiptImage);
 
-function saveReceiptImage(){
+function loadImage(src){
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+function wrapTextLines(ctx, text, maxWidth){
+  const words = text.split(' ');
+  const lines = [];
+  let current = '';
+  const pieces = words.length > 1 ? words : Array.from(text);
+  const sep = words.length > 1 ? ' ' : '';
+  pieces.forEach(piece => {
+    const test = current ? current + sep + piece : piece;
+    if(ctx.measureText(test).width > maxWidth && current){
+      lines.push(current);
+      current = piece;
+    } else {
+      current = test;
+    }
+  });
+  if(current) lines.push(current);
+  return lines;
+}
+
+function drawRoundedRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+async function saveReceiptImage(){
+  const font = '"Segoe UI","Tahoma","Leelawadee UI","Noto Sans Thai",sans-serif';
   const nameVal = customerNameInput.value.trim() || '-';
   const selected = items.filter(it => it.qty > 0);
-  const font = '"Segoe UI","Tahoma","Leelawadee UI","Noto Sans Thai",sans-serif';
+  const leftItems = selected.filter(it => it.side !== 'right');
+  const rightItems = selected.filter(it => it.side === 'right');
+
+  const loadedImages = {};
+  await Promise.all(selected.filter(it => it.image).map(async it => {
+    loadedImages[it.id] = await loadImage(it.image);
+  }));
+
   const scale = 2;
-  const width = 560;
-  const paddingX = 28;
-  const rowHeight = 30;
-  const itemsHeight = Math.max(selected.length, 1) * rowHeight;
-  const height = 150 + itemsHeight + 100;
+  const width = 640;
+  const paddingX = 24;
+  const colGap = 20;
+  const colWidth = (width - paddingX * 2 - colGap) / 2;
+  const imgBoxH = 90;
+  const nameLineH = 18;
+  const priceLineH = 20;
+  const cardGap = 16;
+  const cardH = imgBoxH + nameLineH + priceLineH + 6;
+
+  const rows = Math.max(leftItems.length, rightItems.length, 1);
+  const gridTop = 128;
+  const gridH = selected.length === 0 ? 30 : rows * cardH + (rows - 1) * cardGap;
+  const height = gridTop + gridH + 90;
 
   const canvas = document.createElement('canvas');
   canvas.width = width * scale;
@@ -417,6 +472,7 @@ function saveReceiptImage(){
 
   ctx.fillStyle = '#2c2c2a';
   ctx.font = '600 20px ' + font;
+  ctx.textAlign = 'left';
   ctx.fillText('ใบสั่งผลิต', paddingX, 42);
 
   const now = new Date();
@@ -430,32 +486,67 @@ function saveReceiptImage(){
   ctx.fillStyle = '#2c2c2a';
   ctx.fillText('ลูกค้า: ' + nameVal, paddingX, 90);
 
-  let y = 112;
   ctx.strokeStyle = '#e0ddd6';
   ctx.beginPath();
-  ctx.moveTo(paddingX, y);
-  ctx.lineTo(width - paddingX, y);
+  ctx.moveTo(paddingX, 108);
+  ctx.lineTo(width - paddingX, 108);
   ctx.stroke();
-  y += 30;
 
-  ctx.font = '400 14px ' + font;
-  if(selected.length === 0){
-    ctx.fillStyle = '#9a9a94';
+  function drawCard(it, x, yTop){
+    const boxX = x, boxY = yTop, boxW = colWidth, boxH = imgBoxH;
+    const img = loadedImages[it.id];
+
+    ctx.save();
+    drawRoundedRect(ctx, boxX, boxY, boxW, boxH, 8);
+    ctx.clip();
+    if(img){
+      const coverScale = Math.max(boxW / img.width, boxH / img.height);
+      const dw = img.width * coverScale, dh = img.height * coverScale;
+      ctx.drawImage(img, boxX + (boxW - dw) / 2, boxY + (boxH - dh) / 2, dw, dh);
+    } else {
+      ctx.fillStyle = it.nameTag ? '#1c1c1c' : '#f7f5f2';
+      ctx.fillRect(boxX, boxY, boxW, boxH);
+      ctx.fillStyle = it.nameTag ? '#f4f4f4' : '#2c2c2a';
+      ctx.font = '600 13px ' + font;
+      ctx.textAlign = 'center';
+      const label = it.nameTag ? nameVal : it.name;
+      const lines = wrapTextLines(ctx, label, boxW - 16);
+      const lineH = 16;
+      const startY = boxY + boxH / 2 - ((lines.length - 1) * lineH) / 2 + 4;
+      lines.forEach((line, i) => ctx.fillText(line, boxX + boxW / 2, startY + i * lineH));
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = '#e0ddd6';
+    ctx.lineWidth = 1;
+    drawRoundedRect(ctx, boxX + 0.5, boxY + 0.5, boxW - 1, boxH - 1, 8);
+    ctx.stroke();
+
     ctx.textAlign = 'left';
-    ctx.fillText('ยังไม่ได้เลือกสินค้า', paddingX, y);
-    y += rowHeight;
-  } else {
-    selected.forEach(it => {
+    let textY = boxY + boxH + nameLineH - 4;
+    if(img){
+      ctx.font = '500 12px ' + font;
       ctx.fillStyle = '#2c2c2a';
-      ctx.textAlign = 'left';
-      ctx.fillText(it.name + ' × ' + it.qty, paddingX, y);
-      ctx.textAlign = 'right';
-      ctx.fillText(fmt(it.price * it.qty) + ' บาท', width - paddingX, y);
-      y += rowHeight;
-    });
+      ctx.fillText(it.name, boxX, textY);
+    }
+    textY = boxY + boxH + nameLineH + priceLineH - 4;
+    ctx.font = '600 13px ' + font;
+    ctx.fillStyle = '#9c2b2b';
+    ctx.fillText('×' + it.qty + '   ' + fmt(it.price * it.qty) + ' บาท', boxX, textY);
   }
 
-  y += 6;
+  if(selected.length === 0){
+    ctx.font = '400 14px ' + font;
+    ctx.fillStyle = '#9a9a94';
+    ctx.textAlign = 'left';
+    ctx.fillText('ยังไม่ได้เลือกสินค้า', paddingX, gridTop + 16);
+  } else {
+    leftItems.forEach((it, i) => drawCard(it, paddingX, gridTop + i * (cardH + cardGap)));
+    rightItems.forEach((it, i) => drawCard(it, paddingX + colWidth + colGap, gridTop + i * (cardH + cardGap)));
+  }
+
+  let y = gridTop + gridH + 24;
+  ctx.strokeStyle = '#e0ddd6';
   ctx.beginPath();
   ctx.moveTo(paddingX, y);
   ctx.lineTo(width - paddingX, y);
