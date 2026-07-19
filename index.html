@@ -472,7 +472,7 @@ async function saveReceiptImage(){
   const rowCount = Math.max(leftRows.length, rightItems.length, 1);
   const gridTop = 128;
   const gridH = selected.length === 0 ? 30 : rowCount * cardH + (rowCount - 1) * cardGap;
-  const height = gridTop + gridH + 90;
+  const height = gridTop + gridH + 100;
 
   const canvas = document.createElement('canvas');
   canvas.width = width * scale;
@@ -510,12 +510,31 @@ async function saveReceiptImage(){
 
   function drawCard(it, boxX, boxY, boxW, boxH, compact){
     const img = loadedImages[it.id];
-    const nameSize = compact ? 11 : 13;
-    const priceSize = compact ? 11 : 13;
+    const label = it.nameTag ? nameVal : it.name;
+    const priceLine = '×' + it.qty + '   ' + fmt(it.price * it.qty) + ' บาท';
+    const maxTextW = boxW - 16;
+    const minSize = 8;
+    let nameSize = compact ? 11 : 13;
+    let priceSize = compact ? 11 : 13;
+    let nameLines, lineH, textBlockH;
+
+    while(true){
+      ctx.font = '600 ' + nameSize + 'px ' + font;
+      nameLines = wrapTextLines(ctx, label, maxTextW);
+      const nameFits = nameLines.every(l => ctx.measureText(l).width <= maxTextW);
+      ctx.font = '600 ' + priceSize + 'px ' + font;
+      const priceFits = ctx.measureText(priceLine).width <= maxTextW;
+      lineH = nameSize + 4;
+      textBlockH = (nameLines.length + 1) * lineH;
+      if((nameFits && priceFits && textBlockH <= boxH - 8) || nameSize <= minSize) break;
+      nameSize -= 1;
+      priceSize -= 1;
+    }
 
     ctx.save();
     drawRoundedRect(ctx, boxX, boxY, boxW, boxH, 8);
     ctx.clip();
+
     if(img){
       const coverScale = Math.max(boxW / img.width, boxH / img.height);
       const dw = img.width * coverScale, dh = img.height * coverScale;
@@ -524,26 +543,11 @@ async function saveReceiptImage(){
       ctx.fillStyle = it.nameTag ? '#1c1c1c' : '#f7f5f2';
       ctx.fillRect(boxX, boxY, boxW, boxH);
     }
-    ctx.restore();
 
-    ctx.strokeStyle = '#e0ddd6';
-    ctx.lineWidth = 1;
-    drawRoundedRect(ctx, boxX + 0.5, boxY + 0.5, boxW - 1, boxH - 1, 8);
-    ctx.stroke();
-
-    const label = it.nameTag ? nameVal : it.name;
-    const priceLine = '×' + it.qty + '   ' + fmt(it.price * it.qty) + ' บาท';
     ctx.textAlign = 'center';
-    ctx.font = '600 ' + nameSize + 'px ' + font;
-    const nameLines = wrapTextLines(ctx, label, boxW - 16);
-    ctx.font = '600 ' + priceSize + 'px ' + font;
-    const priceWidth = ctx.measureText(priceLine).width;
-    const lineH = nameSize + 4;
-    const textLines = nameLines.length + 1;
-    const textBlockH = textLines * lineH;
-
     if(img){
-      let maxTextWidth = priceWidth;
+      ctx.font = '600 ' + priceSize + 'px ' + font;
+      let maxTextWidth = ctx.measureText(priceLine).width;
       ctx.font = '600 ' + nameSize + 'px ' + font;
       nameLines.forEach(l => { maxTextWidth = Math.max(maxTextWidth, ctx.measureText(l).width); });
       const scrimW = Math.min(boxW - 8, maxTextWidth + 16);
@@ -564,6 +568,13 @@ async function saveReceiptImage(){
     ctx.font = '600 ' + priceSize + 'px ' + font;
     ctx.fillText(priceLine, boxX + boxW / 2, textY);
     ctx.textAlign = 'left';
+
+    ctx.restore();
+
+    ctx.strokeStyle = '#e0ddd6';
+    ctx.lineWidth = 1;
+    drawRoundedRect(ctx, boxX + 0.5, boxY + 0.5, boxW - 1, boxH - 1, 8);
+    ctx.stroke();
   }
 
   if(selected.length === 0){
@@ -586,23 +597,30 @@ async function saveReceiptImage(){
     rightItems.forEach((it, i) => drawCard(it, paddingX + colWidth + colGap, gridTop + i * (cardH + cardGap), colWidth, cardH, false));
   }
 
-  let y = gridTop + gridH + 24;
+  let y = gridTop + gridH + 28;
   ctx.strokeStyle = '#e0ddd6';
   ctx.beginPath();
   ctx.moveTo(paddingX, y);
   ctx.lineTo(width - paddingX, y);
   ctx.stroke();
-  y += 36;
+  y += 40;
 
   ctx.textAlign = 'left';
-  ctx.font = '500 14px ' + font;
-  ctx.fillStyle = '#6b6b66';
+  ctx.font = '600 16px ' + font;
+  ctx.fillStyle = '#2c2c2a';
   ctx.fillText('ยอดรวม', paddingX, y);
 
+  const totalText = fmt(computeTotal()) + ' บาท';
+  const maxTotalW = width - paddingX * 2 - 90;
+  let totalSize = 28;
+  ctx.font = '700 ' + totalSize + 'px ' + font;
+  while(ctx.measureText(totalText).width > maxTotalW && totalSize > 14){
+    totalSize -= 1;
+    ctx.font = '700 ' + totalSize + 'px ' + font;
+  }
   ctx.textAlign = 'right';
-  ctx.font = '600 22px ' + font;
   ctx.fillStyle = '#9c2b2b';
-  ctx.fillText(fmt(computeTotal()) + ' บาท', width - paddingX, y + 2);
+  ctx.fillText(totalText, width - paddingX, y + 2);
   ctx.textAlign = 'left';
 
   const filenameBase = customerNameInput.value.trim();
