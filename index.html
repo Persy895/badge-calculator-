@@ -420,6 +420,23 @@ function wrapTextLines(ctx, text, maxWidth){
   return lines;
 }
 
+function truncateToWidth(ctx, text, maxWidth){
+  if(ctx.measureText(text).width <= maxWidth) return text;
+  let result = text;
+  while(result.length > 1 && ctx.measureText(result + '…').width > maxWidth){
+    result = result.slice(0, -1);
+  }
+  return result.length > 0 ? result + '…' : '…';
+}
+
+function fitNameLines(ctx, text, maxWidth, maxLines){
+  const lines = wrapTextLines(ctx, text, maxWidth);
+  if(lines.length <= maxLines) return lines;
+  const kept = lines.slice(0, maxLines);
+  kept[maxLines - 1] = truncateToWidth(ctx, kept[maxLines - 1], maxWidth);
+  return kept;
+}
+
 function drawRoundedRect(ctx, x, y, w, h, r){
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -513,23 +530,16 @@ async function saveReceiptImage(){
     const label = it.nameTag ? nameVal : it.name;
     const priceLine = '×' + it.qty + '   ' + fmt(it.price * it.qty) + ' บาท';
     const maxTextW = boxW - 16;
-    const minSize = 8;
-    let nameSize = compact ? 11 : 13;
-    let priceSize = compact ? 11 : 13;
-    let nameLines, lineH, textBlockH;
+    const nameSize = compact ? 11 : 13;
+    const priceSize = compact ? 11 : 13;
+    const lineH = nameSize + 4;
+    const maxNameLines = 2;
 
-    while(true){
-      ctx.font = '600 ' + nameSize + 'px ' + font;
-      nameLines = wrapTextLines(ctx, label, maxTextW);
-      const nameFits = nameLines.every(l => ctx.measureText(l).width <= maxTextW);
-      ctx.font = '600 ' + priceSize + 'px ' + font;
-      const priceFits = ctx.measureText(priceLine).width <= maxTextW;
-      lineH = nameSize + 4;
-      textBlockH = (nameLines.length + 1) * lineH;
-      if((nameFits && priceFits && textBlockH <= boxH - 8) || nameSize <= minSize) break;
-      nameSize -= 1;
-      priceSize -= 1;
-    }
+    ctx.font = '600 ' + nameSize + 'px ' + font;
+    const nameLines = fitNameLines(ctx, label, maxTextW, maxNameLines);
+    ctx.font = '600 ' + priceSize + 'px ' + font;
+    const priceLineFitted = truncateToWidth(ctx, priceLine, maxTextW);
+    const textBlockH = (nameLines.length + 1) * lineH;
 
     ctx.save();
     drawRoundedRect(ctx, boxX, boxY, boxW, boxH, 8);
@@ -547,7 +557,7 @@ async function saveReceiptImage(){
     ctx.textAlign = 'center';
     if(img){
       ctx.font = '600 ' + priceSize + 'px ' + font;
-      let maxTextWidth = ctx.measureText(priceLine).width;
+      let maxTextWidth = ctx.measureText(priceLineFitted).width;
       ctx.font = '600 ' + nameSize + 'px ' + font;
       nameLines.forEach(l => { maxTextWidth = Math.max(maxTextWidth, ctx.measureText(l).width); });
       const scrimW = Math.min(boxW - 8, maxTextWidth + 16);
@@ -566,7 +576,7 @@ async function saveReceiptImage(){
     });
     ctx.fillStyle = img ? '#ffffff' : (it.nameTag ? '#ff8a8a' : '#9c2b2b');
     ctx.font = '600 ' + priceSize + 'px ' + font;
-    ctx.fillText(priceLine, boxX + boxW / 2, textY);
+    ctx.fillText(priceLineFitted, boxX + boxW / 2, textY);
     ctx.textAlign = 'left';
 
     ctx.restore();
