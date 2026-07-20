@@ -620,7 +620,7 @@ async function saveReceiptImage(){
   ctx.fillStyle = '#2c2c2a';
   ctx.fillText('ยอดรวม', paddingX, y);
 
-  const totalRightMargin = paddingX + 16;
+  const totalRightMargin = paddingX + 60;
   const totalText = fmt(computeTotal()) + ' บาท';
   const maxTotalW = width - paddingX - totalRightMargin - 90;
   let totalSize = 26;
