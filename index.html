@@ -165,10 +165,22 @@
       <div id="medalTopRow" class="medal-row"></div>
       <div id="medalRow" class="medal-row"></div>
       <div id="leftList" class="list-col"></div>
-      <button id="addBtnLeft" class="btn full">+ เพิ่มรายการ</button>
     </div>
     <div class="side">
       <div id="rightList" class="list-col"></div>
+    </div>
+  </div>
+
+  <div class="catalog">
+    <div id="rowLeftBox" class="list-col"></div>
+    <div id="rowRightBox" class="list-col"></div>
+  </div>
+
+  <div class="catalog">
+    <div class="side">
+      <button id="addBtnLeft" class="btn full">+ เพิ่มรายการ</button>
+    </div>
+    <div class="side">
       <button id="addBtnRight" class="btn full">+ เพิ่มรายการ</button>
     </div>
   </div>
@@ -191,9 +203,9 @@
 
 <script>
 let items = [
-  {id:'i0', name:'เหรียญ วปร.', price:200, qty:0, side:'left', group:'medal-top', image:'medal-king.jpg'},
-  {id:'i1', name:'เหรียญราชินี', price:200, qty:0, side:'left', group:'medal', image:'medal-queen.jpg'},
-  {id:'i2', name:'เหรียญบรม', price:200, qty:0, side:'left', group:'medal', image:'medal-borom.jpg'},
+  {id:'i0', name:'เหรียญ วปร.', price:154, qty:0, side:'left', group:'medal-top', image:'medal-king.jpg'},
+  {id:'i1', name:'เหรียญราชินี', price:193, qty:0, side:'left', group:'medal', image:'medal-queen.jpg'},
+  {id:'i2', name:'เหรียญบรม', price:176, qty:0, side:'left', group:'medal', image:'medal-borom.jpg'},
   {id:'i3', name:'เหรียญ 72', price:200, qty:0, side:'left', group:'medal', image:'medal-72.jpg'},
   {id:'i4', name:'เหรียญแม่นปืน', price:200, qty:0, side:'left', group:null, image:'medal-maskman.jpg'},
   {id:'i5', name:'รีคอน', price:250, qty:0, side:'left', group:null, image:'recon.jpg'},
@@ -203,8 +215,8 @@ let items = [
   {id:'i12', name:'นักรบผิวน้ำ', price:250, qty:0, side:'right', group:null, image:'surface.jpg'},
   {id:'i13', name:'สงครามทุ่นระเบิด', price:300, qty:0, side:'right', group:null, image:'mine-warfare.jpg'},
   {id:'i9', name:'แพรแถบ', price:100, qty:0, side:'right', group:null, image:null},
-  {id:'i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null},
-  {id:'i11', name:'แถว', price:225, qty:0, side:'right', group:null, image:null}
+  {id:'i10', name:'แถว', price:225, qty:0, side:'left', group:'row', image:null},
+  {id:'i11', name:'แถว', price:225, qty:0, side:'right', group:'row', image:null}
 ];
 let counter = 14;
 
@@ -212,6 +224,8 @@ const medalTopRow = document.getElementById('medalTopRow');
 const medalRow = document.getElementById('medalRow');
 const leftList = document.getElementById('leftList');
 const rightList = document.getElementById('rightList');
+const rowLeftBox = document.getElementById('rowLeftBox');
+const rowRightBox = document.getElementById('rowRightBox');
 const totalEl = document.getElementById('total');
 const customerNameInput = document.getElementById('customerName');
 const receiptName = document.getElementById('receiptName');
@@ -350,6 +364,8 @@ function renderAll(){
   medalRow.innerHTML = '';
   leftList.innerHTML = '';
   rightList.innerHTML = '';
+  rowLeftBox.innerHTML = '';
+  rowRightBox.innerHTML = '';
   items.forEach(it => {
     if(it.group === 'medal-top'){
       const card = cardTemplate(it);
@@ -357,6 +373,8 @@ function renderAll(){
       medalTopRow.appendChild(card);
     } else if(it.group === 'medal'){
       medalRow.appendChild(cardTemplate(it));
+    } else if(it.group === 'row'){
+      (it.side === 'right' ? rowRightBox : rowLeftBox).appendChild(cardTemplate(it));
     } else if(it.side === 'right'){
       rightList.appendChild(cardTemplate(it));
     } else {
