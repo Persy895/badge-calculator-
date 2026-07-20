@@ -70,6 +70,20 @@
   }
   .item-image img{width:100%;height:100%;object-fit:cover;display:block;}
   .placeholder-text{font-size:11px;color:var(--text-muted);}
+  .ribbon-options{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  .ribbon-thumb{
+    width:52px;height:52px;padding:0;border-radius:8px;
+    border:2px solid var(--border);background:var(--bg);
+    overflow:hidden;cursor:pointer;flex-shrink:0;
+  }
+  .ribbon-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .ribbon-thumb.selected{border-color:var(--accent);}
+  .ribbon-thumb.ribbon-add{
+    display:flex;align-items:center;justify-content:center;
+    border-style:dashed;color:var(--text-muted);font-size:22px;
+    background:var(--card);line-height:1;
+  }
+  .ribbon-thumb.ribbon-add:active{transform:scale(0.96);}
   .image-btns{display:flex;gap:6px;margin-bottom:8px;}
   .image-btns button{
     flex:1;font-size:11px;padding:6px 4px;border-radius:6px;
@@ -204,11 +218,17 @@ let items = [
   {id:'i8', name:'ปฏิบัติงานใต้น้ำ', price:300, qty:0, side:'right', group:null, image:'underwater.jpg'},
   {id:'i12', name:'นักรบผิวน้ำ', price:250, qty:0, side:'right', group:null, image:'surface.jpg'},
   {id:'i13', name:'สงครามทุ่นระเบิด', price:300, qty:0, side:'right', group:null, image:'mine-warfare.jpg'},
-  {id:'i9', name:'แพรแถบ', price:100, qty:0, side:'right', group:null, image:null},
+  {id:'i9', name:'แพรแถบ', price:100, qty:0, side:'right', group:null, image:null, imageOptions:true},
   {id:'i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null},
   {id:'i11', name:'แถว', price:225, qty:0, side:'right', group:null, image:null}
 ];
 let counter = 14;
+
+let ribbonOptions = [];
+try{ ribbonOptions = JSON.parse(localStorage.getItem('ribbonOptions') || '[]'); }catch(e){ ribbonOptions = []; }
+function saveRibbonOptions(){
+  try{ localStorage.setItem('ribbonOptions', JSON.stringify(ribbonOptions)); }catch(e){}
+}
 
 const medalTopRow = document.getElementById('medalTopRow');
 const medalRow = document.getElementById('medalRow');
@@ -256,6 +276,10 @@ function cardTemplate(it){
   if(it.nameTag){
     const nameVal = customerNameInput.value.trim() || 'ชื่อลูกค้า';
     visualHtml = '<div class="nameplate-preview" data-role="nameplate">' + nameVal + '</div>';
+  } else if(it.imageOptions){
+    visualHtml =
+      '<div class="ribbon-options" data-role="ribbonOptions"></div>' +
+      '<input type="file" accept="image/*" data-role="fileRibbon" style="display:none">';
   } else {
     visualHtml =
       '<div class="item-image" data-role="imageArea">' +
@@ -319,7 +343,41 @@ function cardTemplate(it){
     renderReceipt();
   });
 
-  if(!it.nameTag){
+  if(it.imageOptions){
+    const ribbonBox = card.querySelector('[data-role="ribbonOptions"]');
+    const fileRibbon = card.querySelector('[data-role="fileRibbon"]');
+
+    function renderRibbonThumbs(){
+      ribbonBox.innerHTML = ribbonOptions.map((opt, idx) =>
+        '<button type="button" class="ribbon-thumb' + (it.image === opt ? ' selected' : '') + '" data-idx="' + idx + '" aria-label="เลือกลายแพรแถบ"><img src="' + opt + '" alt=""></button>'
+      ).join('') + '<button type="button" class="ribbon-thumb ribbon-add" data-role="addRibbon" aria-label="เพิ่มลายแพรแถบ">+</button>';
+
+      ribbonBox.querySelectorAll('.ribbon-thumb[data-idx]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          it.image = ribbonOptions[Number(btn.dataset.idx)];
+          renderRibbonThumbs();
+        });
+      });
+      ribbonBox.querySelector('[data-role="addRibbon"]').addEventListener('click', () => fileRibbon.click());
+    }
+
+    fileRibbon.addEventListener('change', () => {
+      const file = fileRibbon.files && fileRibbon.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const dataUrl = e.target.result;
+        ribbonOptions.push(dataUrl);
+        saveRibbonOptions();
+        it.image = dataUrl;
+        renderRibbonThumbs();
+      };
+      reader.readAsDataURL(file);
+      fileRibbon.value = '';
+    });
+
+    renderRibbonThumbs();
+  } else if(!it.nameTag){
     const imageArea = card.querySelector('[data-role="imageArea"]');
     const chooseBtn = card.querySelector('[data-role="chooseImg"]');
     const takeBtn = card.querySelector('[data-role="takePhoto"]');
