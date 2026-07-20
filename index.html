@@ -489,7 +489,7 @@ async function saveReceiptImage(){
   const rowCount = Math.max(leftRows.length, rightItems.length, 1);
   const gridTop = 128;
   const gridH = selected.length === 0 ? 30 : rowCount * cardH + (rowCount - 1) * cardGap;
-  const height = gridTop + gridH + 100;
+  const height = gridTop + gridH + 130;
 
   const canvas = document.createElement('canvas');
   canvas.width = width * scale;
@@ -613,25 +613,24 @@ async function saveReceiptImage(){
   ctx.moveTo(paddingX, y);
   ctx.lineTo(width - paddingX, y);
   ctx.stroke();
-  y += 40;
+  y += 34;
 
-  ctx.textAlign = 'left';
-  ctx.font = '600 16px ' + font;
-  ctx.fillStyle = '#2c2c2a';
-  ctx.fillText('ยอดรวม', paddingX, y);
+  ctx.textAlign = 'center';
+  ctx.font = '600 15px ' + font;
+  ctx.fillStyle = '#6b6b66';
+  ctx.fillText('ยอดรวม', width / 2, y);
+  y += 36;
 
-  const totalRightMargin = paddingX + 60;
   const totalText = fmt(computeTotal()) + ' บาท';
-  const maxTotalW = width - paddingX - totalRightMargin - 90;
-  let totalSize = 26;
+  const maxTotalW = width - paddingX * 2 - 20;
+  let totalSize = 30;
   ctx.font = '700 ' + totalSize + 'px ' + font;
   while(ctx.measureText(totalText).width > maxTotalW && totalSize > 14){
     totalSize -= 1;
     ctx.font = '700 ' + totalSize + 'px ' + font;
   }
-  ctx.textAlign = 'right';
   ctx.fillStyle = '#9c2b2b';
-  ctx.fillText(totalText, width - totalRightMargin, y + 2);
+  ctx.fillText(totalText, width / 2, y);
   ctx.textAlign = 'left';
 
   const filenameBase = customerNameInput.value.trim();
