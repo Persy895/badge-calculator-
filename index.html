@@ -221,6 +221,8 @@
 </div>
 
 <script>
+function rankOpt(name, image){ return {name: name, image: image}; }
+
 let items = [
   {id:'i0', name:'เหรียญ วปร.', price:154, qty:0, side:'left', group:'medal-top', image:'medal-king.jpg'},
   {id:'i1', name:'เหรียญราชินี', price:193, qty:0, side:'left', group:'medal', image:'medal-queen.jpg'},
@@ -233,16 +235,66 @@ let items = [
   {id:'i8', name:'ปฏิบัติงานใต้น้ำ', price:300, qty:0, side:'right', group:null, image:'underwater.jpg'},
   {id:'i12', name:'นักรบผิวน้ำ', price:250, qty:0, side:'right', group:null, image:'surface.jpg'},
   {id:'i13', name:'สงครามทุ่นระเบิด', price:300, qty:0, side:'right', group:null, image:'mine-warfare.jpg'},
-  {id:'i9', name:'แพรแถบ', price:100, qty:0, side:'right', group:null, image:null, rankSelect:true, rankLabel:null},
+  {id:'i9', name:'จ่าตรี-จ่าเอก', price:120, qty:0, side:'right', group:null, image:null, rankSelect:true, rankLabel:null, rankOptions:[
+    rankOpt('E1 จ่าตรี-จ่าเอก อายุราชการไม่ถึง 5 ปี', 'E1.jpg'),
+    rankOpt('E2 จ่าเอก อายุราชการครบ 5 ปี รทช.', 'E2.jpg')
+  ]},
+  {id:'i14', name:'พันจ่าตรี- พันจ่าเอกพิเศษ', price:180, qty:0, side:'right', group:null, image:null, rankSelect:true, rankLabel:null, rankOptions:[
+    rankOpt('E3 พันจ่าตรี-พันจ่าเอก อายุราชการไม่ถึง 5 ปี บม. / รทช.', 'E3.jpg'),
+    rankOpt('E4 พันจ่าตรี-พันจ่าเอก อายุราชการไม่ถึง 5 ปี บม. /พิทักษ์/ชายแดน', 'E4.jpg'),
+    rankOpt('E5 พันจ่าตรี-พันจ่าเอก อายุราชการไม่ถึง 5 ปี บม. /พิทักษ์/รทช.', 'E5.jpg'),
+    rankOpt('E6 พันจ่าตรี-พันจ่าเอก อายุราชการไม่ถึง 5 ปี บม. /ชายแดน/รทช.', 'E6.jpg'),
+    rankOpt('E7 พันจ่าตรี-พันจ่าเอก อายุราชการไม่ถึง 5 ปี บม. /รทช./จักรมาลา', 'E7.jpg'),
+    rankOpt('E8 พันจ่าเอก(5ปี)-พันจ่าเอก(พ) บช. /บม.', 'E8.jpg'),
+    rankOpt('E9 พันจ่าเอก(5ปี)-พันจ่าเอก(พ) บช. /บม./พิทักษ์', 'E9.jpg'),
+    rankOpt('E10 พันจ่าเอก(5ปี)-พันจ่าเอก(พ) บช. /บม./ชายแดน', 'E10.jpg'),
+    rankOpt('E11 พันจ่าเอก(5ปี)-พันจ่าเอก(พ) บช. /บม./จักรมาลา', 'E11.jpg')
+  ]},
+  {id:'i15', name:'เรือตรี-เรือเอก', price:200, qty:0, side:'right', group:null, image:null, rankSelect:true, rankLabel:null, rankOptions:[
+    rankOpt('O1-1 เรือตรี จม./บช.', 'O1-1.jpg'),
+    rankOpt('O1-2 เรือตรี จม./บช./พิทักษ์', 'O1-2.jpg'),
+    rankOpt('O1-3 เรือตรี จม./บช./ชายแดน', 'O1-3.jpg'),
+    rankOpt('O1-4 เรือตรี จม./บช./จักรมาลา', 'O1-4.jpg'),
+    rankOpt('O2-1 เรือโท จช./จม.', 'O2-1.jpg'),
+    rankOpt('O2-2 เรือโท จช./จม./พิทักษ์', 'O2-2.jpg'),
+    rankOpt('O2-3 เรือโท จช./จม./ชายแดน', 'O2-3.jpg'),
+    rankOpt('O2-4 เรือโท จช./จม./จักรมาลา', 'O2-4.jpg'),
+    rankOpt('O3-1 เรือเอก ตม./จช.', 'O3-1.jpg'),
+    rankOpt('O3-2 เรือเอก ตม./จช./พิทักษ์', 'O3-2.jpg'),
+    rankOpt('O3-3 เรือเอก ตม./จช./ชายแดน', 'O3-3.jpg'),
+    rankOpt('O3-4 เรือเอก ตม./จช./จักรมาลา', 'O3-4.jpg')
+  ]},
+  {id:'i16', name:'นาวาตรี-นาวาเอกพิเศษ', price:220, qty:0, side:'right', group:null, image:null, rankSelect:true, rankLabel:null, rankOptions:[
+    rankOpt('O45-1 นาวาตรี-นาวาโท ตช./ตม.', 'O45-1.jpg'),
+    rankOpt('O45-2 นาวาตรี-นาวาโท ตช./ตม./พิทักษ์', 'O45-2.jpg'),
+    rankOpt('O45-3 นาวาตรี-นาวาโท ตช./ตม./ชายแดน', 'O45-3.jpg'),
+    rankOpt('O45-4 นาวาตรี-นาวาโท ตช./ตม./จักรมาลา', 'O45-4.jpg'),
+    rankOpt('O45-5 นาวาตรี-นาวาโท ตช./ตม./ชายแดน/จักรมาลา', 'O45-5.jpg'),
+    rankOpt('O56-1 นาวาโท(5ปี)-นาวาเอก ทม./ตช.', 'O56-1.jpg'),
+    rankOpt('O56-2 นาวาโท(5ปี)-นาวาเอก ทม./ตช./พิทักษ์', 'O56-2.jpg'),
+    rankOpt('O56-3 นาวาโท(5ปี)-นาวาเอก ทม./ตช./ชายแดน', 'O56-3.jpg'),
+    rankOpt('O56-4 นาวาโท(5ปี)-นาวาเอก ทม./ตช./จักรมาลา', 'O56-4.jpg'),
+    rankOpt('O56-5 นาวาโท(5ปี)-นาวาเอก ทม./ตช./ชายแดน/จักรมาลา', 'O56-5.jpg'),
+    rankOpt('O7-1 นาวาเอก(พ) ทช./ทม.', 'O7-1.jpg'),
+    rankOpt('O7-2 นาวาเอก(พ) ทช./ทม./พิทักษ์', 'O7-2.jpg'),
+    rankOpt('O7-3 นาวาเอก(พ) ทช./ทม./ชายแดน', 'O7-3.jpg'),
+    rankOpt('O7-4 นาวาเอก(พ) ทช./ทม./จักรมาลา', 'O7-4.jpg'),
+    rankOpt('O7-5 นาวาเอก(พ) ทช./ทม./ชายแดน/จักรมาลา', 'O7-5.jpg')
+  ]},
   {id:'i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null},
   {id:'i11', name:'แถว', price:225, qty:0, side:'right', group:null, image:null}
 ];
-let counter = 14;
+let counter = 17;
 
-let rankOptions = [];
-try{ rankOptions = JSON.parse(localStorage.getItem('rankOptions') || '[]'); }catch(e){ rankOptions = []; }
-function saveRankOptions(){
-  try{ localStorage.setItem('rankOptions', JSON.stringify(rankOptions)); }catch(e){}
+function loadRankOptions(it){
+  try{
+    const saved = JSON.parse(localStorage.getItem('rankOptions_' + it.id) || 'null');
+    if(Array.isArray(saved)) return saved;
+  }catch(e){}
+  return it.rankOptions || [];
+}
+function saveRankOptions(it, options){
+  try{ localStorage.setItem('rankOptions_' + it.id, JSON.stringify(options)); }catch(e){}
 }
 
 const medalTopRow = document.getElementById('medalTopRow');
@@ -380,6 +432,7 @@ function cardTemplate(it){
     const selectLabel = card.querySelector('[data-role="rankSelectLabel"]');
     const panel = card.querySelector('[data-role="rankSelectPanel"]');
     const newRankFile = card.querySelector('[data-role="newRankFile"]');
+    const options = loadRankOptions(it);
     let pendingName = '';
 
     function updateButtonLabel(){
@@ -396,8 +449,8 @@ function cardTemplate(it){
     }
 
     function renderPanel(){
-      const optionsHtml = rankOptions.length
-        ? rankOptions.map((opt, idx) =>
+      const optionsHtml = options.length
+        ? options.map((opt, idx) =>
             '<div class="rank-option" data-idx="' + idx + '">' +
               '<span class="check">' + (it.rankLabel === opt.name ? '✓' : '') + '</span>' +
               '<span>' + opt.name + '</span>' +
@@ -412,7 +465,7 @@ function cardTemplate(it){
         '</div>';
 
       panel.querySelectorAll('.rank-option').forEach(row => {
-        row.addEventListener('click', () => selectRank(rankOptions[Number(row.dataset.idx)]));
+        row.addEventListener('click', () => selectRank(options[Number(row.dataset.idx)]));
       });
       const nameInput = panel.querySelector('[data-role="newRankName"]');
       nameInput.addEventListener('input', () => { pendingName = nameInput.value; });
@@ -437,8 +490,8 @@ function cardTemplate(it){
       const reader = new FileReader();
       reader.onload = function(e){
         const opt = {name: pendingName, image: e.target.result};
-        rankOptions.push(opt);
-        saveRankOptions();
+        options.push(opt);
+        saveRankOptions(it, options);
         pendingName = '';
         selectRank(opt);
       };
