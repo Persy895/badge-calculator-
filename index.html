@@ -70,20 +70,35 @@
   }
   .item-image img{width:100%;height:100%;object-fit:cover;display:block;}
   .placeholder-text{font-size:11px;color:var(--text-muted);}
-  .ribbon-options{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
-  .ribbon-thumb{
-    width:52px;height:52px;padding:0;border-radius:8px;
-    border:2px solid var(--border);background:var(--bg);
-    overflow:hidden;cursor:pointer;flex-shrink:0;
+  .rank-select{position:relative;margin-bottom:8px;}
+  .rank-select-btn{
+    width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:10px 12px;border:1px solid var(--border);border-radius:8px;
+    background:var(--bg);font-size:14px;color:var(--text);cursor:pointer;font-family:inherit;
   }
-  .ribbon-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
-  .ribbon-thumb.selected{border-color:var(--accent);}
-  .ribbon-thumb.ribbon-add{
-    display:flex;align-items:center;justify-content:center;
-    border-style:dashed;color:var(--text-muted);font-size:22px;
-    background:var(--card);line-height:1;
+  .rank-select-btn .placeholder{color:var(--text-muted);}
+  .rank-select-caret{font-size:11px;color:var(--text-secondary);flex-shrink:0;}
+  .rank-select-panel{
+    position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:20;
+    background:var(--card);border:1px solid var(--border);border-radius:8px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.15);padding:6px;
   }
-  .ribbon-thumb.ribbon-add:active{transform:scale(0.96);}
+  .rank-select-panel[hidden]{display:none;}
+  .rank-option{
+    display:flex;align-items:center;gap:8px;padding:8px;border-radius:6px;
+    cursor:pointer;font-size:14px;
+  }
+  .rank-option:hover{background:var(--bg);}
+  .rank-option .check{width:16px;color:var(--accent);font-size:13px;flex-shrink:0;}
+  .rank-empty{padding:8px;font-size:12px;color:var(--text-muted);}
+  .rank-select-add{
+    display:flex;flex-wrap:wrap;gap:6px;padding:8px 4px 4px;border-top:1px solid var(--border);margin-top:4px;
+  }
+  .rank-select-add input[type="text"]{flex:1;min-width:80px;font-size:12px;padding:6px 8px;}
+  .rank-select-add button{
+    font-size:11px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);
+    background:var(--card);cursor:pointer;font-family:inherit;white-space:nowrap;
+  }
   .image-btns{display:flex;gap:6px;margin-bottom:8px;}
   .image-btns button{
     flex:1;font-size:11px;padding:6px 4px;border-radius:6px;
@@ -206,6 +221,9 @@
 </div>
 
 <script>
+function rankOpt(name, image){ return {name: name, image: image}; }
+function rankGroup(name, price, options){ return {name: name, price: price, options: options}; }
+
 let items = [
   {id:'i0', name:'เหรียญ วปร.', price:154, qty:0, side:'left', group:'medal-top', image:'medal-king.jpg'},
   {id:'i1', name:'เหรียญราชินี', price:193, qty:0, side:'left', group:'medal', image:'medal-queen.jpg'},
@@ -218,16 +236,68 @@ let items = [
   {id:'i8', name:'ปฏิบัติงานใต้น้ำ', price:300, qty:0, side:'right', group:null, image:'underwater.jpg'},
   {id:'i12', name:'นักรบผิวน้ำ', price:250, qty:0, side:'right', group:null, image:'surface.jpg'},
   {id:'i13', name:'สงครามทุ่นระเบิด', price:300, qty:0, side:'right', group:null, image:'mine-warfare.jpg'},
-  {id:'i9', name:'แพรแถบ', price:100, qty:0, side:'right', group:null, image:null, imageOptions:true},
+  {id:'i9', name:'แพรแถบ', price:0, qty:0, side:'right', group:null, image:null, rankSelect:true, rankGroupIdx:null, rankLabel:null, rankGroups:[
+    rankGroup('จ่าตรี-จ่าเอก', 120, [
+      rankOpt('E1 จ่าตรี-จ่าเอก อายุราชการไม่ถึง 5 ปี', 'E1.jpg'),
+      rankOpt('E2 จ่าเอก อายุราชการครบ 5 ปี รทช.', 'E2.jpg')
+    ]),
+    rankGroup('พันจ่าตรี- พันจ่าเอกพิเศษ', 180, [
+      rankOpt('E3 พันจ่าตรี-พันจ่าเอก อายุราชการไม่ถึง 5 ปี บม. / รทช.', 'E3.jpg'),
+      rankOpt('E4 พันจ่าตรี-พันจ่าเอก อายุราชการไม่ถึง 5 ปี บม. /พิทักษ์/ชายแดน', 'E4.jpg'),
+      rankOpt('E5 พันจ่าตรี-พันจ่าเอก อายุราชการไม่ถึง 5 ปี บม. /พิทักษ์/รทช.', 'E5.jpg'),
+      rankOpt('E6 พันจ่าตรี-พันจ่าเอก อายุราชการไม่ถึง 5 ปี บม. /ชายแดน/รทช.', 'E6.jpg'),
+      rankOpt('E7 พันจ่าตรี-พันจ่าเอก อายุราชการไม่ถึง 5 ปี บม. /รทช./จักรมาลา', 'E7.jpg'),
+      rankOpt('E8 พันจ่าเอก(5ปี)-พันจ่าเอก(พ) บช. /บม.', 'E8.jpg'),
+      rankOpt('E9 พันจ่าเอก(5ปี)-พันจ่าเอก(พ) บช. /บม./พิทักษ์', 'E9.jpg'),
+      rankOpt('E10 พันจ่าเอก(5ปี)-พันจ่าเอก(พ) บช. /บม./ชายแดน', 'E10.jpg'),
+      rankOpt('E11 พันจ่าเอก(5ปี)-พันจ่าเอก(พ) บช. /บม./จักรมาลา', 'E11.jpg')
+    ]),
+    rankGroup('เรือตรี-เรือเอก', 200, [
+      rankOpt('O1-1 เรือตรี จม./บช.', 'O1-1.jpg'),
+      rankOpt('O1-2 เรือตรี จม./บช./พิทักษ์', 'O1-2.jpg'),
+      rankOpt('O1-3 เรือตรี จม./บช./ชายแดน', 'O1-3.jpg'),
+      rankOpt('O1-4 เรือตรี จม./บช./จักรมาลา', 'O1-4.jpg'),
+      rankOpt('O2-1 เรือโท จช./จม.', 'O2-1.jpg'),
+      rankOpt('O2-2 เรือโท จช./จม./พิทักษ์', 'O2-2.jpg'),
+      rankOpt('O2-3 เรือโท จช./จม./ชายแดน', 'O2-3.jpg'),
+      rankOpt('O2-4 เรือโท จช./จม./จักรมาลา', 'O2-4.jpg'),
+      rankOpt('O3-1 เรือเอก ตม./จช.', 'O3-1.jpg'),
+      rankOpt('O3-2 เรือเอก ตม./จช./พิทักษ์', 'O3-2.jpg'),
+      rankOpt('O3-3 เรือเอก ตม./จช./ชายแดน', 'O3-3.jpg'),
+      rankOpt('O3-4 เรือเอก ตม./จช./จักรมาลา', 'O3-4.jpg')
+    ]),
+    rankGroup('นาวาตรี-นาวาเอกพิเศษ', 220, [
+      rankOpt('O45-1 นาวาตรี-นาวาโท ตช./ตม.', 'O45-1.jpg'),
+      rankOpt('O45-2 นาวาตรี-นาวาโท ตช./ตม./พิทักษ์', 'O45-2.jpg'),
+      rankOpt('O45-3 นาวาตรี-นาวาโท ตช./ตม./ชายแดน', 'O45-3.jpg'),
+      rankOpt('O45-4 นาวาตรี-นาวาโท ตช./ตม./จักรมาลา', 'O45-4.jpg'),
+      rankOpt('O45-5 นาวาตรี-นาวาโท ตช./ตม./ชายแดน/จักรมาลา', 'O45-5.jpg'),
+      rankOpt('O56-1 นาวาโท(5ปี)-นาวาเอก ทม./ตช.', 'O56-1.jpg'),
+      rankOpt('O56-2 นาวาโท(5ปี)-นาวาเอก ทม./ตช./พิทักษ์', 'O56-2.jpg'),
+      rankOpt('O56-3 นาวาโท(5ปี)-นาวาเอก ทม./ตช./ชายแดน', 'O56-3.jpg'),
+      rankOpt('O56-4 นาวาโท(5ปี)-นาวาเอก ทม./ตช./จักรมาลา', 'O56-4.jpg'),
+      rankOpt('O56-5 นาวาโท(5ปี)-นาวาเอก ทม./ตช./ชายแดน/จักรมาลา', 'O56-5.jpg'),
+      rankOpt('O7-1 นาวาเอก(พ) ทช./ทม.', 'O7-1.jpg'),
+      rankOpt('O7-2 นาวาเอก(พ) ทช./ทม./พิทักษ์', 'O7-2.jpg'),
+      rankOpt('O7-3 นาวาเอก(พ) ทช./ทม./ชายแดน', 'O7-3.jpg'),
+      rankOpt('O7-4 นาวาเอก(พ) ทช./ทม./จักรมาลา', 'O7-4.jpg'),
+      rankOpt('O7-5 นาวาเอก(พ) ทช./ทม./ชายแดน/จักรมาลา', 'O7-5.jpg')
+    ])
+  ]},
   {id:'i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null},
   {id:'i11', name:'แถว', price:225, qty:0, side:'right', group:null, image:null}
 ];
-let counter = 14;
+let counter = 17;
 
-let ribbonOptions = [];
-try{ ribbonOptions = JSON.parse(localStorage.getItem('ribbonOptions') || '[]'); }catch(e){ ribbonOptions = []; }
-function saveRibbonOptions(){
-  try{ localStorage.setItem('ribbonOptions', JSON.stringify(ribbonOptions)); }catch(e){}
+function loadRankOptions(it, groupIdx){
+  try{
+    const saved = JSON.parse(localStorage.getItem('rankOptions_' + it.id + '_' + groupIdx) || 'null');
+    if(Array.isArray(saved)) return saved;
+  }catch(e){}
+  return (it.rankGroups[groupIdx] && it.rankGroups[groupIdx].options) || [];
+}
+function saveRankOptions(it, groupIdx, options){
+  try{ localStorage.setItem('rankOptions_' + it.id + '_' + groupIdx, JSON.stringify(options)); }catch(e){}
 }
 
 const medalTopRow = document.getElementById('medalTopRow');
@@ -268,6 +338,13 @@ function updateNamePlates(){
   });
 }
 
+document.addEventListener('click', (e) => {
+  document.querySelectorAll('.rank-select-panel:not([hidden])').forEach(panel => {
+    const wrap = panel.closest('.rank-select');
+    if(wrap && !wrap.contains(e.target)) panel.hidden = true;
+  });
+});
+
 function cardTemplate(it){
   const card = document.createElement('div');
   card.className = 'card';
@@ -276,10 +353,28 @@ function cardTemplate(it){
   if(it.nameTag){
     const nameVal = customerNameInput.value.trim() || 'ชื่อลูกค้า';
     visualHtml = '<div class="nameplate-preview" data-role="nameplate">' + nameVal + '</div>';
-  } else if(it.imageOptions){
+  } else if(it.rankSelect){
+    const groupSelected = it.rankGroupIdx != null;
+    const groupName = groupSelected ? it.rankGroups[it.rankGroupIdx].name : 'เลือกกลุ่มยศ';
     visualHtml =
-      '<div class="ribbon-options" data-role="ribbonOptions"></div>' +
-      '<input type="file" accept="image/*" data-role="fileRibbon" style="display:none">';
+      '<div class="item-image" data-role="imageArea">' +
+        (it.image ? '<img src="' + it.image + '" alt="">' : '<span class="placeholder-text">ยังไม่มีรูป</span>') +
+      '</div>' +
+      '<div class="rank-select" data-role="rankGroupSelect">' +
+        '<button type="button" class="rank-select-btn" data-role="rankGroupBtn">' +
+          '<span data-role="rankGroupLabel"' + (groupSelected ? '' : ' class="placeholder"') + '>' + groupName + '</span>' +
+          '<span class="rank-select-caret">▾</span>' +
+        '</button>' +
+        '<div class="rank-select-panel" data-role="rankGroupPanel" hidden></div>' +
+      '</div>' +
+      '<div class="rank-select" data-role="rankSelect">' +
+        '<button type="button" class="rank-select-btn" data-role="rankSelectBtn">' +
+          '<span data-role="rankSelectLabel"' + (it.rankLabel ? '' : ' class="placeholder"') + '>' + (it.rankLabel || 'เลือกยศ') + '</span>' +
+          '<span class="rank-select-caret">▾</span>' +
+        '</button>' +
+        '<div class="rank-select-panel" data-role="rankSelectPanel" hidden></div>' +
+      '</div>' +
+      '<input type="file" accept="image/*" data-role="newRankFile" style="display:none">';
   } else {
     visualHtml =
       '<div class="item-image" data-role="imageArea">' +
@@ -343,40 +438,128 @@ function cardTemplate(it){
     renderReceipt();
   });
 
-  if(it.imageOptions){
-    const ribbonBox = card.querySelector('[data-role="ribbonOptions"]');
-    const fileRibbon = card.querySelector('[data-role="fileRibbon"]');
+  if(it.rankSelect){
+    const imageArea = card.querySelector('[data-role="imageArea"]');
+    const groupBtn = card.querySelector('[data-role="rankGroupBtn"]');
+    const groupLabel = card.querySelector('[data-role="rankGroupLabel"]');
+    const groupPanel = card.querySelector('[data-role="rankGroupPanel"]');
+    const selectBtn = card.querySelector('[data-role="rankSelectBtn"]');
+    const selectLabel = card.querySelector('[data-role="rankSelectLabel"]');
+    const panel = card.querySelector('[data-role="rankSelectPanel"]');
+    const newRankFile = card.querySelector('[data-role="newRankFile"]');
+    let pendingName = '';
+    let currentOptions = it.rankGroupIdx != null ? loadRankOptions(it, it.rankGroupIdx) : [];
 
-    function renderRibbonThumbs(){
-      ribbonBox.innerHTML = ribbonOptions.map((opt, idx) =>
-        '<button type="button" class="ribbon-thumb' + (it.image === opt ? ' selected' : '') + '" data-idx="' + idx + '" aria-label="เลือกลายแพรแถบ"><img src="' + opt + '" alt=""></button>'
-      ).join('') + '<button type="button" class="ribbon-thumb ribbon-add" data-role="addRibbon" aria-label="เพิ่มลายแพรแถบ">+</button>';
-
-      ribbonBox.querySelectorAll('.ribbon-thumb[data-idx]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          it.image = ribbonOptions[Number(btn.dataset.idx)];
-          renderRibbonThumbs();
-        });
-      });
-      ribbonBox.querySelector('[data-role="addRibbon"]').addEventListener('click', () => fileRibbon.click());
+    function updateGroupLabel(){
+      const g = it.rankGroupIdx != null ? it.rankGroups[it.rankGroupIdx] : null;
+      groupLabel.textContent = g ? g.name : 'เลือกกลุ่มยศ';
+      groupLabel.classList.toggle('placeholder', !g);
     }
 
-    fileRibbon.addEventListener('change', () => {
-      const file = fileRibbon.files && fileRibbon.files[0];
+    function updateSelectLabel(){
+      selectLabel.textContent = it.rankLabel || 'เลือกยศ';
+      selectLabel.classList.toggle('placeholder', !it.rankLabel);
+    }
+
+    function selectGroup(idx){
+      it.rankGroupIdx = idx;
+      it.rankLabel = null;
+      it.image = null;
+      const group = it.rankGroups[idx];
+      it.price = group.price;
+      priceInput.value = group.price;
+      subtotalSpan.textContent = fmt(it.price * it.qty);
+      currentOptions = loadRankOptions(it, idx);
+      imageArea.innerHTML = '<span class="placeholder-text">ยังไม่มีรูป</span>';
+      updateGroupLabel();
+      updateSelectLabel();
+      groupPanel.hidden = true;
+      renderReceipt();
+    }
+
+    function selectRank(opt){
+      it.rankLabel = opt.name;
+      it.image = opt.image;
+      imageArea.innerHTML = it.image ? '<img src="' + it.image + '" alt="">' : '<span class="placeholder-text">ยังไม่มีรูป</span>';
+      updateSelectLabel();
+      panel.hidden = true;
+    }
+
+    function renderGroupPanel(){
+      groupPanel.innerHTML = it.rankGroups.map((g, idx) =>
+        '<div class="rank-option" data-idx="' + idx + '">' +
+          '<span class="check">' + (it.rankGroupIdx === idx ? '✓' : '') + '</span>' +
+          '<span>' + g.name + '</span>' +
+        '</div>'
+      ).join('');
+      groupPanel.querySelectorAll('.rank-option').forEach(row => {
+        row.addEventListener('click', () => selectGroup(Number(row.dataset.idx)));
+      });
+    }
+
+    function renderPanel(){
+      if(it.rankGroupIdx == null){
+        panel.innerHTML = '<div class="rank-empty">เลือกกลุ่มยศก่อน</div>';
+        return;
+      }
+      const optionsHtml = currentOptions.length
+        ? currentOptions.map((opt, idx) =>
+            '<div class="rank-option" data-idx="' + idx + '">' +
+              '<span class="check">' + (it.rankLabel === opt.name ? '✓' : '') + '</span>' +
+              '<span>' + opt.name + '</span>' +
+            '</div>'
+          ).join('')
+        : '<div class="rank-empty">ยังไม่มีตัวเลือก</div>';
+
+      panel.innerHTML = optionsHtml +
+        '<div class="rank-select-add">' +
+          '<input type="text" placeholder="ชื่อยศใหม่" data-role="newRankName" value="' + pendingName.replace(/"/g,'&quot;') + '">' +
+          '<button type="button" data-role="newRankImageBtn">+ เพิ่มยศ</button>' +
+        '</div>';
+
+      panel.querySelectorAll('.rank-option').forEach(row => {
+        row.addEventListener('click', () => selectRank(currentOptions[Number(row.dataset.idx)]));
+      });
+      const nameInput = panel.querySelector('[data-role="newRankName"]');
+      nameInput.addEventListener('input', () => { pendingName = nameInput.value; });
+      panel.querySelector('[data-role="newRankImageBtn"]').addEventListener('click', () => {
+        if(!nameInput.value.trim()){
+          nameInput.focus();
+          return;
+        }
+        pendingName = nameInput.value.trim();
+        newRankFile.click();
+      });
+    }
+
+    groupBtn.addEventListener('click', () => {
+      if(groupPanel.hidden){ renderGroupPanel(); groupPanel.hidden = false; }
+      else{ groupPanel.hidden = true; }
+    });
+
+    selectBtn.addEventListener('click', () => {
+      if(panel.hidden){ renderPanel(); panel.hidden = false; }
+      else{ panel.hidden = true; }
+    });
+
+    newRankFile.addEventListener('change', () => {
+      if(it.rankGroupIdx == null) return;
+      const file = newRankFile.files && newRankFile.files[0];
       if(!file) return;
       const reader = new FileReader();
       reader.onload = function(e){
-        const dataUrl = e.target.result;
-        ribbonOptions.push(dataUrl);
-        saveRibbonOptions();
-        it.image = dataUrl;
-        renderRibbonThumbs();
+        const opt = {name: pendingName, image: e.target.result};
+        currentOptions.push(opt);
+        saveRankOptions(it, it.rankGroupIdx, currentOptions);
+        pendingName = '';
+        selectRank(opt);
       };
       reader.readAsDataURL(file);
-      fileRibbon.value = '';
+      newRankFile.value = '';
     });
 
-    renderRibbonThumbs();
+    updateGroupLabel();
+    updateSelectLabel();
   } else if(!it.nameTag){
     const imageArea = card.querySelector('[data-role="imageArea"]');
     const chooseBtn = card.querySelector('[data-role="chooseImg"]');
