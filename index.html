@@ -41,9 +41,11 @@
   input[type="text"]:focus, input[type="number"]:focus{
     outline:none;border-color:var(--accent);
   }
-  .catalog{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+  .catalog{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;align-items:stretch;}
+  .side{display:flex;flex-direction:column;justify-content:flex-end;}
   @media (max-width:640px){
     .catalog{grid-template-columns:1fr;}
+    .side{justify-content:flex-start;}
   }
   .medal-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
   .list-col{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
@@ -191,9 +193,9 @@
 
 <script>
 let items = [
-  {id:'i0', name:'เหรียญ วปร.', price:200, qty:0, side:'left', group:'medal-top', image:'medal-king.jpg'},
-  {id:'i1', name:'เหรียญราชินี', price:200, qty:0, side:'left', group:'medal', image:'medal-queen.jpg'},
-  {id:'i2', name:'เหรียญบรม', price:200, qty:0, side:'left', group:'medal', image:'medal-borom.jpg'},
+  {id:'i0', name:'เหรียญ วปร.', price:154, qty:0, side:'left', group:'medal-top', image:'medal-king.jpg'},
+  {id:'i1', name:'เหรียญราชินี', price:193, qty:0, side:'left', group:'medal', image:'medal-queen.jpg'},
+  {id:'i2', name:'เหรียญบรม', price:176, qty:0, side:'left', group:'medal', image:'medal-borom.jpg'},
   {id:'i3', name:'เหรียญ 72', price:200, qty:0, side:'left', group:'medal', image:'medal-72.jpg'},
   {id:'i4', name:'เหรียญแม่นปืน', price:200, qty:0, side:'left', group:null, image:'medal-maskman.jpg'},
   {id:'i5', name:'รีคอน', price:250, qty:0, side:'left', group:null, image:'recon.jpg'},
@@ -601,8 +603,10 @@ async function saveReceiptImage(){
     ctx.textAlign = 'left';
     ctx.fillText('ยังไม่ได้เลือกสินค้า', paddingX, gridTop + 16);
   } else {
+    const leftOffset = (rowCount - leftRows.length) * (cardH + cardGap);
+    const rightOffset = (rowCount - rightItems.length) * (cardH + cardGap);
     leftRows.forEach((row, i) => {
-      const yTop = gridTop + i * (cardH + cardGap);
+      const yTop = gridTop + leftOffset + i * (cardH + cardGap);
       if(row.type === 'medal'){
         const miniW = (colWidth - (row.items.length - 1) * miniGap) / row.items.length;
         row.items.forEach((it, j) => {
@@ -612,7 +616,7 @@ async function saveReceiptImage(){
         drawCard(row.item, paddingX, yTop, colWidth, cardH, false);
       }
     });
-    rightItems.forEach((it, i) => drawCard(it, paddingX + colWidth + colGap, gridTop + i * (cardH + cardGap), colWidth, cardH, false));
+    rightItems.forEach((it, i) => drawCard(it, paddingX + colWidth + colGap, gridTop + rightOffset + i * (cardH + cardGap), colWidth, cardH, false));
   }
 
   let y = gridTop + gridH + 28;
