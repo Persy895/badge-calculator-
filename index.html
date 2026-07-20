@@ -437,6 +437,12 @@ function fitNameLines(ctx, text, maxWidth, maxLines){
   return kept;
 }
 
+function fillTextCentered(ctx, text, centerX, y){
+  const w = ctx.measureText(text).width;
+  ctx.textAlign = 'left';
+  ctx.fillText(text, centerX - w / 2, y);
+}
+
 function drawRoundedRect(ctx, x, y, w, h, r){
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -554,7 +560,6 @@ async function saveReceiptImage(){
       ctx.fillRect(boxX, boxY, boxW, boxH);
     }
 
-    ctx.textAlign = 'center';
     if(img){
       ctx.font = '600 ' + priceSize + 'px ' + font;
       let maxTextWidth = ctx.measureText(priceLineFitted).width;
@@ -571,13 +576,12 @@ async function saveReceiptImage(){
     let textY = boxY + boxH / 2 - textBlockH / 2 + nameSize;
     ctx.font = '600 ' + nameSize + 'px ' + font;
     nameLines.forEach(line => {
-      ctx.fillText(line, boxX + boxW / 2, textY);
+      fillTextCentered(ctx, line, boxX + boxW / 2, textY);
       textY += lineH;
     });
     ctx.fillStyle = img ? '#ffffff' : (it.nameTag ? '#ff8a8a' : '#9c2b2b');
     ctx.font = '600 ' + priceSize + 'px ' + font;
-    ctx.fillText(priceLineFitted, boxX + boxW / 2, textY);
-    ctx.textAlign = 'left';
+    fillTextCentered(ctx, priceLineFitted, boxX + boxW / 2, textY);
 
     ctx.restore();
 
@@ -615,10 +619,9 @@ async function saveReceiptImage(){
   ctx.stroke();
   y += 34;
 
-  ctx.textAlign = 'center';
   ctx.font = '600 15px ' + font;
   ctx.fillStyle = '#6b6b66';
-  ctx.fillText('ยอดรวม', width / 2, y);
+  fillTextCentered(ctx, 'ยอดรวม', width / 2, y);
   y += 36;
 
   const totalText = fmt(computeTotal()) + ' บาท';
@@ -630,7 +633,7 @@ async function saveReceiptImage(){
     ctx.font = '700 ' + totalSize + 'px ' + font;
   }
   ctx.fillStyle = '#9c2b2b';
-  ctx.fillText(totalText, width / 2, y);
+  fillTextCentered(ctx, totalText, width / 2, y);
   ctx.textAlign = 'left';
 
   const filenameBase = customerNameInput.value.trim();
