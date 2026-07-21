@@ -712,7 +712,9 @@ function buildLeftRows(leftItems){
   const rows = [];
   let medalInserted = false;
   leftItems.forEach(it => {
-    if(it.group === 'medal'){
+    if(it.group === 'medal-top'){
+      rows.push({type:'medal-top', item: it});
+    } else if(it.group === 'medal'){
       if(!medalInserted){
         rows.push({type:'medal', items: medals});
         medalInserted = true;
@@ -855,7 +857,10 @@ async function saveReceiptImage(){
     const rightOffset = (rowCount - rightItems.length) * (cardH + cardGap);
     leftRows.forEach((row, i) => {
       const yTop = gridTop + leftOffset + i * (cardH + cardGap);
-      if(row.type === 'medal'){
+      if(row.type === 'medal-top'){
+        const miniW = (colWidth - 2 * miniGap) / 3;
+        drawCard(row.item, paddingX + (miniW + miniGap), yTop, miniW, cardH, true);
+      } else if(row.type === 'medal'){
         const miniW = (colWidth - (row.items.length - 1) * miniGap) / row.items.length;
         row.items.forEach((it, j) => {
           drawCard(it, paddingX + j * (miniW + miniGap), yTop, miniW, cardH, true);
