@@ -90,6 +90,7 @@
   }
   .rank-option:hover{background:var(--bg);}
   .rank-option .check{width:16px;color:var(--accent);font-size:13px;flex-shrink:0;}
+  .rank-option-thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--bg);}
   .rank-empty{padding:8px;font-size:12px;color:var(--text-muted);}
   .rank-select-add{
     display:flex;flex-wrap:wrap;gap:6px;padding:8px 4px 4px;border-top:1px solid var(--border);margin-top:4px;
@@ -506,6 +507,7 @@ function cardTemplate(it){
         ? currentOptions.map((opt, idx) =>
             '<div class="rank-option" data-idx="' + idx + '">' +
               '<span class="check">' + (it.rankLabel === opt.name ? '✓' : '') + '</span>' +
+              (opt.image ? '<img class="rank-option-thumb" src="' + opt.image + '" alt="">' : '') +
               '<span>' + opt.name + '</span>' +
             '</div>'
           ).join('')
