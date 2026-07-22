@@ -319,23 +319,36 @@ function makeNavyItems(){
   ];
 }
 
-function makeBranchItems(prefix){
-  return [
+function makeBranchItems(prefix, includeMarksman){
+  const list = [
     {id:prefix+'-i0', name:'เหรียญ วปร.', price:154, qty:0, side:'left', group:'medal-top', image:'medal-king.jpg'},
     {id:prefix+'-i1', name:'เหรียญราชินี', price:193, qty:0, side:'left', group:'medal', image:'medal-queen.jpg'},
     {id:prefix+'-i2', name:'เหรียญบรม', price:176, qty:0, side:'left', group:'medal', image:'medal-borom.jpg'},
-    {id:prefix+'-i3', name:'เหรียญ 72', price:200, qty:0, side:'left', group:'medal', image:'medal-72.jpg'},
+    {id:prefix+'-i3', name:'เหรียญ 72', price:200, qty:0, side:'left', group:'medal', image:'medal-72.jpg'}
+  ];
+  if(includeMarksman){
+    list.push({id:prefix+'-i14', name:'เหรียญ นรต.', price:200, qty:0, side:'left', group:null, image:null});
+    list.push({id:prefix+'-i4', name:'เหรียญแม่นปืนตำรวจ', price:200, qty:0, side:'left', group:null, image:'medal-maskman.jpg'});
+    list.push({id:prefix+'-i15', name:'อรินทราช', price:200, qty:0, side:'left', group:null, image:null});
+  }
+  list.push(
     {id:prefix+'-i6', name:'ป้ายชื่อ', price:150, qty:0, side:'left', group:null, image:null, nameTag:true},
-    {id:prefix+'-i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null},
+    {id:prefix+'-i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null}
+  );
+  if(includeMarksman){
+    list.push({id:prefix+'-i16', name:'ร่มตำรวจ', price:300, qty:0, side:'right', group:null, image:'parachute.jpg'});
+  }
+  list.push(
     {id:prefix+'-i9', name:'แพรแถบ', price:0, qty:0, side:'right', group:null, image:null, rankSelect:true, rankGroupIdx:null, rankLabel:null, rankGroups: buildRibbonRankGroups()},
     {id:prefix+'-i11', name:'แถว', price:225, qty:0, side:'right', group:null, image:null}
-  ];
+  );
+  return list;
 }
 
 const branchStore = {
   navy: {items: makeNavyItems(), counter: 17, customerName: ''},
   army: {items: makeBranchItems('army'), counter: 100, customerName: ''},
-  police: {items: makeBranchItems('police'), counter: 100, customerName: ''},
+  police: {items: makeBranchItems('police', true), counter: 100, customerName: ''},
   airforce: {items: makeBranchItems('airforce'), counter: 100, customerName: ''}
 };
 
