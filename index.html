@@ -333,7 +333,12 @@ function makeBranchItems(prefix, includeMarksman){
   }
   list.push(
     {id:prefix+'-i6', name:'ป้ายชื่อ', price:150, qty:0, side:'left', group:null, image:null, nameTag:true},
-    {id:prefix+'-i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null},
+    {id:prefix+'-i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null}
+  );
+  if(includeMarksman){
+    list.push({id:prefix+'-i16', name:'ร่มตำรวจ', price:300, qty:0, side:'right', group:null, image:'parachute.jpg'});
+  }
+  list.push(
     {id:prefix+'-i9', name:'แพรแถบ', price:0, qty:0, side:'right', group:null, image:null, rankSelect:true, rankGroupIdx:null, rankLabel:null, rankGroups: buildRibbonRankGroups()},
     {id:prefix+'-i11', name:'แถว', price:225, qty:0, side:'right', group:null, image:null}
   );
