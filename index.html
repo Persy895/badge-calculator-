@@ -41,6 +41,17 @@
   input[type="text"]:focus, input[type="number"]:focus{
     outline:none;border-color:var(--accent);
   }
+  select.branch-select{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    background:var(--card);
+    color:var(--text);
+    font-size:15px;
+    font-family:inherit;
+  }
+  select.branch-select:focus{outline:none;border-color:var(--accent);}
   .catalog{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;align-items:stretch;}
   .side{display:flex;flex-direction:column;justify-content:flex-end;}
   @media (max-width:640px){
@@ -186,6 +197,16 @@
 </head>
 <body>
 <div class="container">
+  <div class="field">
+    <label>เลือกเหล่า</label>
+    <select id="branchSelect" class="branch-select">
+      <option value="navy">ทหารเรือ</option>
+      <option value="army">ทหารบก</option>
+      <option value="police">ตำรวจ</option>
+      <option value="airforce">ทหารอากาศ</option>
+    </select>
+  </div>
+
   <h1>เครื่องคิดราคาเครื่องหมาย</h1>
 
   <div class="field">
@@ -227,19 +248,8 @@
 function rankOpt(name, image){ return {name: name, image: image}; }
 function rankGroup(name, price, options){ return {name: name, price: price, options: options}; }
 
-let items = [
-  {id:'i0', name:'เหรียญ วปร.', price:154, qty:0, side:'left', group:'medal-top', image:'medal-king.jpg'},
-  {id:'i1', name:'เหรียญราชินี', price:193, qty:0, side:'left', group:'medal', image:'medal-queen.jpg'},
-  {id:'i2', name:'เหรียญบรม', price:176, qty:0, side:'left', group:'medal', image:'medal-borom.jpg'},
-  {id:'i3', name:'เหรียญ 72', price:200, qty:0, side:'left', group:'medal', image:'medal-72.jpg'},
-  {id:'i4', name:'เหรียญแม่นปืน', price:200, qty:0, side:'left', group:null, image:'medal-maskman.jpg'},
-  {id:'i5', name:'รีคอน', price:250, qty:0, side:'left', group:null, image:'recon.jpg'},
-  {id:'i6', name:'ป้ายชื่อ', price:150, qty:0, side:'left', group:null, image:null, nameTag:true},
-  {id:'i7', name:'ร่ม', price:300, qty:0, side:'right', group:null, image:'parachute.jpg'},
-  {id:'i8', name:'ปฏิบัติงานใต้น้ำ', price:300, qty:0, side:'right', group:null, image:'underwater.jpg'},
-  {id:'i12', name:'นักรบผิวน้ำ', price:250, qty:0, side:'right', group:null, image:'surface.jpg'},
-  {id:'i13', name:'สงครามทุ่นระเบิด', price:300, qty:0, side:'right', group:null, image:'mine-warfare.jpg'},
-  {id:'i9', name:'แพรแถบ', price:0, qty:0, side:'right', group:null, image:null, rankSelect:true, rankGroupIdx:null, rankLabel:null, rankGroups:[
+function buildRibbonRankGroups(){
+  return [
     rankGroup('จ่าตรี-จ่าเอก', 120, [
       rankOpt('E1 จ่าตรี-จ่าเอก อายุราชการไม่ถึง 5 ปี', 'E1.png'),
       rankOpt('E2 จ่าเอก อายุราชการครบ 5 ปี รทช.', 'E2.png')
@@ -287,11 +297,51 @@ let items = [
       rankOpt('O7-4 นาวาเอก(พ) ทช./ทม./จักรมาลา', 'O7-4.png'),
       rankOpt('O7-5 นาวาเอก(พ) ทช./ทม./พิทักษ์/ชายแดน', 'O7-5.png')
     ])
-  ]},
-  {id:'i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null},
-  {id:'i11', name:'แถว', price:225, qty:0, side:'right', group:null, image:null}
-];
-let counter = 17;
+  ];
+}
+
+function makeNavyItems(){
+  return [
+    {id:'i0', name:'เหรียญ วปร.', price:154, qty:0, side:'left', group:'medal-top', image:'medal-king.jpg'},
+    {id:'i1', name:'เหรียญราชินี', price:193, qty:0, side:'left', group:'medal', image:'medal-queen.jpg'},
+    {id:'i2', name:'เหรียญบรม', price:176, qty:0, side:'left', group:'medal', image:'medal-borom.jpg'},
+    {id:'i3', name:'เหรียญ 72', price:200, qty:0, side:'left', group:'medal', image:'medal-72.jpg'},
+    {id:'i4', name:'เหรียญแม่นปืน', price:200, qty:0, side:'left', group:null, image:'medal-maskman.jpg'},
+    {id:'i5', name:'รีคอน', price:250, qty:0, side:'left', group:null, image:'recon.jpg'},
+    {id:'i6', name:'ป้ายชื่อ', price:150, qty:0, side:'left', group:null, image:null, nameTag:true},
+    {id:'i7', name:'ร่ม', price:300, qty:0, side:'right', group:null, image:'parachute.jpg'},
+    {id:'i8', name:'ปฏิบัติงานใต้น้ำ', price:300, qty:0, side:'right', group:null, image:'underwater.jpg'},
+    {id:'i12', name:'นักรบผิวน้ำ', price:250, qty:0, side:'right', group:null, image:'surface.jpg'},
+    {id:'i13', name:'สงครามทุ่นระเบิด', price:300, qty:0, side:'right', group:null, image:'mine-warfare.jpg'},
+    {id:'i9', name:'แพรแถบ', price:0, qty:0, side:'right', group:null, image:null, rankSelect:true, rankGroupIdx:null, rankLabel:null, rankGroups: buildRibbonRankGroups()},
+    {id:'i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null},
+    {id:'i11', name:'แถว', price:225, qty:0, side:'right', group:null, image:null}
+  ];
+}
+
+function makeBranchItems(prefix){
+  return [
+    {id:prefix+'-i0', name:'เหรียญ วปร.', price:154, qty:0, side:'left', group:'medal-top', image:'medal-king.jpg'},
+    {id:prefix+'-i1', name:'เหรียญราชินี', price:193, qty:0, side:'left', group:'medal', image:'medal-queen.jpg'},
+    {id:prefix+'-i2', name:'เหรียญบรม', price:176, qty:0, side:'left', group:'medal', image:'medal-borom.jpg'},
+    {id:prefix+'-i3', name:'เหรียญ 72', price:200, qty:0, side:'left', group:'medal', image:'medal-72.jpg'},
+    {id:prefix+'-i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null},
+    {id:prefix+'-i6', name:'ป้ายชื่อ', price:150, qty:0, side:'left', group:null, image:null, nameTag:true},
+    {id:prefix+'-i11', name:'แถว', price:225, qty:0, side:'right', group:null, image:null},
+    {id:prefix+'-i9', name:'แพรแถบ', price:0, qty:0, side:'right', group:null, image:null, rankSelect:true, rankGroupIdx:null, rankLabel:null, rankGroups: buildRibbonRankGroups()}
+  ];
+}
+
+const branchStore = {
+  navy: {items: makeNavyItems(), counter: 17, customerName: ''},
+  army: {items: makeBranchItems('army'), counter: 100, customerName: ''},
+  police: {items: makeBranchItems('police'), counter: 100, customerName: ''},
+  airforce: {items: makeBranchItems('airforce'), counter: 100, customerName: ''}
+};
+
+let currentBranch = 'navy';
+let items = branchStore[currentBranch].items;
+let counter = branchStore[currentBranch].counter;
 
 function loadRankOptions(it, groupIdx){
   try{
@@ -312,6 +362,21 @@ const totalEl = document.getElementById('total');
 const customerNameInput = document.getElementById('customerName');
 const receiptName = document.getElementById('receiptName');
 const receiptItems = document.getElementById('receiptItems');
+const branchSelect = document.getElementById('branchSelect');
+
+function switchBranch(nextBranch){
+  if(nextBranch === currentBranch || !branchStore[nextBranch]) return;
+  branchStore[currentBranch].items = items;
+  branchStore[currentBranch].counter = counter;
+  branchStore[currentBranch].customerName = customerNameInput.value;
+  currentBranch = nextBranch;
+  items = branchStore[currentBranch].items;
+  counter = branchStore[currentBranch].counter;
+  customerNameInput.value = branchStore[currentBranch].customerName;
+  renderAll();
+}
+
+branchSelect.addEventListener('change', () => switchBranch(branchSelect.value));
 
 function fmt(n){ return Math.round(n).toLocaleString('th-TH'); }
 
