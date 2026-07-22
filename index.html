@@ -327,16 +327,16 @@ function makeBranchItems(prefix, includeMarksman){
     {id:prefix+'-i3', name:'เหรียญ 72', price:200, qty:0, side:'left', group:'medal', image:'medal-72.jpg'}
   ];
   if(includeMarksman){
-    list.push({id:prefix+'-i14', name:'เหรียญ นรต.', price:200, qty:0, side:'left', group:null, image:null});
-    list.push({id:prefix+'-i4', name:'เหรียญแม่นปืนตำรวจ', price:200, qty:0, side:'left', group:null, image:'medal-maskman.jpg'});
-    list.push({id:prefix+'-i15', name:'อรินทราช', price:200, qty:0, side:'left', group:null, image:null});
+    list.push({id:prefix+'-i14', name:'เหรียญ นรต.', price:200, qty:0, side:'left', group:null, image:'medal-nrt.png'});
+    list.push({id:prefix+'-i4', name:'เหรียญแม่นปืนตำรวจ', price:200, qty:0, side:'left', group:null, image:'medal-maskman-police.png'});
+    list.push({id:prefix+'-i15', name:'อรินทราช', price:200, qty:0, side:'left', group:null, image:'arintaraj.png'});
   }
   list.push(
     {id:prefix+'-i6', name:'ป้ายชื่อ', price:150, qty:0, side:'left', group:null, image:null, nameTag:true},
     {id:prefix+'-i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null}
   );
   if(includeMarksman){
-    list.push({id:prefix+'-i16', name:'ร่มตำรวจ', price:300, qty:0, side:'right', group:null, image:'parachute.jpg'});
+    list.push({id:prefix+'-i16', name:'ร่มตำรวจ', price:300, qty:0, side:'right', group:null, image:'parachute-police.png'});
   }
   list.push(
     {id:prefix+'-i9', name:'แพรแถบ', price:0, qty:0, side:'right', group:null, image:null, rankSelect:true, rankGroupIdx:null, rankLabel:null, rankGroups: buildRibbonRankGroups()},
