@@ -816,6 +816,7 @@ async function saveReceiptImage(){
   await Promise.all(selected.filter(it => it.image).map(async it => {
     loadedImages[it.id] = await loadImage(it.image);
   }));
+  const qrImg = await loadImage('payment-qr.jpg');
 
   const scale = 2;
   const width = 640;
@@ -829,7 +830,12 @@ async function saveReceiptImage(){
   const rowCount = Math.max(leftRows.length, rightItems.length, 1);
   const gridTop = 128;
   const gridH = selected.length === 0 ? 30 : rowCount * cardH + (rowCount - 1) * cardGap;
-  const height = gridTop + gridH + 130;
+
+  const qrWidth = qrImg ? 180 : 0;
+  const qrHeight = qrImg ? qrWidth * (qrImg.height / qrImg.width) : 0;
+  const qrGap = qrImg ? 24 : 0;
+  const bottomPadding = qrImg ? 24 : 32;
+  const height = gridTop + gridH + 98 + qrGap + qrHeight + bottomPadding;
 
   const canvas = document.createElement('canvas');
   canvas.width = width * scale;
@@ -974,6 +980,12 @@ async function saveReceiptImage(){
   ctx.fillStyle = '#9c2b2b';
   fillTextCentered(ctx, totalText, width / 2, y);
   ctx.textAlign = 'left';
+
+  if(qrImg){
+    const qrY = y + qrGap;
+    const qrX = (width - qrWidth) / 2;
+    ctx.drawImage(qrImg, qrX, qrY, qrWidth, qrHeight);
+  }
 
   const filenameBase = customerNameInput.value.trim();
   canvas.toBlob(blob => {
