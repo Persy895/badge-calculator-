@@ -44,6 +44,18 @@
   input[type="text"]:focus, input[type="number"]:focus{
     outline:none;border-color:var(--accent);
   }
+  textarea{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    background:var(--card);
+    color:var(--text);
+    font-size:15px;
+    font-family:inherit;
+    resize:vertical;
+  }
+  textarea:focus{outline:none;border-color:var(--accent);}
   select.branch-select{
     width:100%;
     padding:10px 12px;
@@ -221,6 +233,15 @@
   </div>
   <p class="hint">ป้ายชื่อจะขึ้นชื่อลูกค้าอัตโนมัติในกรอบดำด้านล่าง ไม่ต้องอัปโหลดรูป</p>
 
+  <div class="field">
+    <label>เบอร์โทร</label>
+    <input type="text" id="customerPhone" placeholder="พิมพ์เบอร์โทรลูกค้า (ถ้ามี)">
+  </div>
+  <div class="field">
+    <label>ที่อยู่จัดส่ง</label>
+    <textarea id="customerAddress" rows="2" placeholder="พิมพ์ที่อยู่จัดส่ง (ถ้ามี)"></textarea>
+  </div>
+
   <div class="catalog">
     <div class="side">
       <div id="medalTopRow" class="medal-row"></div>
@@ -352,10 +373,10 @@ function makeBranchItems(prefix, includeMarksman){
 }
 
 const branchStore = {
-  navy: {items: makeNavyItems(), counter: 17, customerName: ''},
-  army: {items: makeBranchItems('army'), counter: 100, customerName: ''},
-  police: {items: makeBranchItems('police', true), counter: 100, customerName: ''},
-  airforce: {items: makeBranchItems('airforce'), counter: 100, customerName: ''}
+  navy: {items: makeNavyItems(), counter: 17, customerName: '', customerPhone: '', customerAddress: ''},
+  army: {items: makeBranchItems('army'), counter: 100, customerName: '', customerPhone: '', customerAddress: ''},
+  police: {items: makeBranchItems('police', true), counter: 100, customerName: '', customerPhone: '', customerAddress: ''},
+  airforce: {items: makeBranchItems('airforce'), counter: 100, customerName: '', customerPhone: '', customerAddress: ''}
 };
 
 let currentBranch = 'navy';
@@ -377,6 +398,8 @@ function saveOrderRecord(nameVal, selected, total, imageDataUrl){
       branch: currentBranch,
       branchLabel: BRANCH_LABELS[currentBranch] || currentBranch,
       customerName: nameVal,
+      phone: customerPhoneInput.value.trim(),
+      address: customerAddressInput.value.trim(),
       items: selected.map(it => ({name: it.nameTag ? nameVal : it.name, price: it.price, qty: it.qty})),
       total: total,
       image: imageDataUrl,
@@ -408,6 +431,8 @@ const leftList = document.getElementById('leftList');
 const rightList = document.getElementById('rightList');
 const totalEl = document.getElementById('total');
 const customerNameInput = document.getElementById('customerName');
+const customerPhoneInput = document.getElementById('customerPhone');
+const customerAddressInput = document.getElementById('customerAddress');
 const receiptName = document.getElementById('receiptName');
 const receiptItems = document.getElementById('receiptItems');
 const branchSelect = document.getElementById('branchSelect');
@@ -417,10 +442,14 @@ function switchBranch(nextBranch){
   branchStore[currentBranch].items = items;
   branchStore[currentBranch].counter = counter;
   branchStore[currentBranch].customerName = customerNameInput.value;
+  branchStore[currentBranch].customerPhone = customerPhoneInput.value;
+  branchStore[currentBranch].customerAddress = customerAddressInput.value;
   currentBranch = nextBranch;
   items = branchStore[currentBranch].items;
   counter = branchStore[currentBranch].counter;
   customerNameInput.value = branchStore[currentBranch].customerName;
+  customerPhoneInput.value = branchStore[currentBranch].customerPhone;
+  customerAddressInput.value = branchStore[currentBranch].customerAddress;
   renderAll();
 }
 
@@ -749,6 +778,8 @@ document.getElementById('addBtnRight').addEventListener('click', () => {
 document.getElementById('clearBtn').addEventListener('click', () => {
   items.forEach(it => it.qty = 0);
   customerNameInput.value = '';
+  customerPhoneInput.value = '';
+  customerAddressInput.value = '';
   renderAll();
 });
 
