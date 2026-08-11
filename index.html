@@ -912,7 +912,7 @@ async function saveReceiptImage(){
   const gridTop = 128;
   const gridH = selected.length === 0 ? 30 : rowCount * cardH + (rowCount - 1) * cardGap;
 
-  const qrWidth = qrImg ? 180 : 0;
+  const qrWidth = qrImg ? 260 : 0;
   const qrHeight = qrImg ? qrWidth * (qrImg.height / qrImg.width) : 0;
   const qrGap = qrImg ? 24 : 0;
   const bottomPadding = qrImg ? 24 : 32;
