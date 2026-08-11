@@ -385,13 +385,24 @@ let counter = branchStore[currentBranch].counter;
 
 const ORDERS_KEY = 'badgeCalcOrders';
 const ORDER_SEQ_KEY = 'badgeCalcOrderSeq';
+const SYNC_URL_KEY = 'badgeCalcSyncUrl';
 const BRANCH_LABELS = {navy:'ทหารเรือ', army:'ทหารบก', police:'ตำรวจ', airforce:'ทหารอากาศ'};
+
+function pushOrderToSync(order){
+  const syncUrl = localStorage.getItem(SYNC_URL_KEY);
+  if(!syncUrl) return;
+  fetch(syncUrl, {
+    method: 'POST',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify({action: 'create', order: order})
+  }).catch(e => console.error('sync create failed', e));
+}
 
 function saveOrderRecord(nameVal, selected, total, imageDataUrl){
   try{
     const orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
     const seq = Number(localStorage.getItem(ORDER_SEQ_KEY) || '0') + 1;
-    orders.push({
+    const order = {
       id: Date.now() + '-' + Math.random().toString(36).slice(2, 8),
       seq: seq,
       createdAt: new Date().toISOString(),
@@ -404,9 +415,11 @@ function saveOrderRecord(nameVal, selected, total, imageDataUrl){
       total: total,
       image: imageDataUrl,
       status: 'in_progress'
-    });
+    };
+    orders.push(order);
     localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
     localStorage.setItem(ORDER_SEQ_KEY, String(seq));
+    pushOrderToSync(order);
     return true;
   }catch(e){
     console.error(e);
