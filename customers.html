@@ -23,6 +23,10 @@
     --status-paid-bg:#e2f3ea;
     --status-cancelled:#742a2a;
     --status-cancelled-bg:#f3e2e2;
+    --status-done:#2f855a;
+    --status-done-bg:#e2f3ea;
+    --status-pending:#8a8a84;
+    --status-pending-bg:#ececE6;
   }
   *{box-sizing:border-box;}
   body{
@@ -59,13 +63,13 @@
     font-size:14px;font-family:inherit;
   }
   #searchInput:focus{outline:none;border-color:var(--accent);}
-  .filter-btns{display:flex;flex-wrap:wrap;gap:6px;}
-  .filter-btn{
-    padding:8px 12px;border-radius:20px;border:1px solid var(--border);
+  .filter-row{display:flex;flex-wrap:wrap;gap:6px;}
+  .filter-select{
+    padding:8px 10px;border-radius:20px;border:1px solid var(--border);
     background:var(--card);color:var(--text-secondary);font-size:12px;cursor:pointer;
-    font-family:inherit;white-space:nowrap;
+    font-family:inherit;
   }
-  .filter-btn.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+  .filter-select:focus{outline:none;border-color:var(--accent);}
   .sort-btn{
     padding:8px 12px;border-radius:20px;border:1px solid var(--border);
     background:var(--card);color:var(--text-secondary);font-size:12px;cursor:pointer;font-family:inherit;
@@ -74,17 +78,21 @@
   .order-card{
     background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;
   }
-  .order-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-  .order-meta{display:flex;align-items:baseline;gap:8px;}
+  .order-top{margin-bottom:8px;}
+  .order-meta{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;}
   .order-seq{font-size:13px;font-weight:600;color:var(--text);}
   .order-date{font-size:11px;color:var(--text-muted);}
+  .badge-row{display:flex;flex-wrap:wrap;gap:6px;}
   .status-badge{
     font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;white-space:nowrap;
   }
-  .status-badge.in_progress{color:var(--status-progress);background:var(--status-progress-bg);}
-  .status-badge.shipped{color:var(--status-shipped);background:var(--status-shipped-bg);}
-  .status-badge.paid{color:var(--status-paid);background:var(--status-paid-bg);}
-  .status-badge.cancelled{color:var(--status-cancelled);background:var(--status-cancelled-bg);}
+  .status-badge.order-in_progress{color:var(--status-progress);background:var(--status-progress-bg);}
+  .status-badge.order-done{color:var(--status-done);background:var(--status-done-bg);}
+  .status-badge.order-cancelled{color:var(--status-cancelled);background:var(--status-cancelled-bg);}
+  .status-badge.payment-paid{color:var(--status-paid);background:var(--status-paid-bg);}
+  .status-badge.payment-unpaid{color:var(--status-pending);background:var(--status-pending-bg);}
+  .status-badge.shipping-shipped{color:var(--status-shipped);background:var(--status-shipped-bg);}
+  .status-badge.shipping-not_shipped{color:var(--status-pending);background:var(--status-pending-bg);}
   .order-body{display:flex;gap:12px;margin-bottom:10px;}
   .order-thumb{
     width:88px;height:88px;border-radius:8px;object-fit:cover;flex-shrink:0;
@@ -98,8 +106,8 @@
   .order-total{font-size:15px;font-weight:600;color:var(--accent);margin:0;}
   .order-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   .status-select{
-    flex:1;min-width:130px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
-    background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;
+    flex:1 1 110px;min-width:110px;padding:8px 8px;border:1px solid var(--border);border-radius:8px;
+    background:var(--bg);color:var(--text);font-size:12px;font-family:inherit;
   }
   .icon-btn{
     padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);
@@ -191,9 +199,10 @@
   <div class="stats">
     <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">ทั้งหมด</div></div>
     <div class="stat-card"><div class="stat-value" id="statProgress">0</div><div class="stat-label">กำลังดำเนินการ</div></div>
-    <div class="stat-card"><div class="stat-value" id="statShipped">0</div><div class="stat-label">จัดส่งแล้ว</div></div>
-    <div class="stat-card"><div class="stat-value" id="statPaid">0</div><div class="stat-label">ได้รับเงินแล้ว</div></div>
+    <div class="stat-card"><div class="stat-value" id="statDone">0</div><div class="stat-label">สำเร็จ</div></div>
     <div class="stat-card"><div class="stat-value" id="statCancelled">0</div><div class="stat-label">ยกเลิก</div></div>
+    <div class="stat-card"><div class="stat-value" id="statPaid">0</div><div class="stat-label">ได้รับเงินแล้ว</div></div>
+    <div class="stat-card"><div class="stat-value" id="statShipped">0</div><div class="stat-label">จัดส่งแล้ว</div></div>
   </div>
 
   <div class="revenue-card">
@@ -207,12 +216,23 @@
     <button class="sort-btn" id="sortBtn" type="button">ใหม่ก่อน</button>
     <button class="sort-btn" id="exportBtn" type="button">ส่งออก CSV</button>
   </div>
-  <div class="controls filter-btns">
-    <button class="filter-btn active" data-status="all" type="button">ทั้งหมด</button>
-    <button class="filter-btn" data-status="in_progress" type="button">กำลังดำเนินการ</button>
-    <button class="filter-btn" data-status="shipped" type="button">จัดส่งแล้ว</button>
-    <button class="filter-btn" data-status="paid" type="button">ได้รับเงินแล้ว</button>
-    <button class="filter-btn" data-status="cancelled" type="button">ยกเลิก</button>
+  <div class="controls filter-row">
+    <select id="filterOrderStatus" class="filter-select">
+      <option value="all">สถานะงาน: ทั้งหมด</option>
+      <option value="in_progress">กำลังดำเนินการ</option>
+      <option value="done">สำเร็จ</option>
+      <option value="cancelled">ยกเลิก</option>
+    </select>
+    <select id="filterPaymentStatus" class="filter-select">
+      <option value="all">การชำระเงิน: ทั้งหมด</option>
+      <option value="paid">ได้รับเงินแล้ว</option>
+      <option value="unpaid">ยังไม่ได้รับเงิน</option>
+    </select>
+    <select id="filterShippingStatus" class="filter-select">
+      <option value="all">การจัดส่ง: ทั้งหมด</option>
+      <option value="shipped">จัดส่งแล้ว</option>
+      <option value="not_shipped">ยังไม่จัดส่ง</option>
+    </select>
   </div>
 
   <div id="orderList" class="order-list"></div>
@@ -234,13 +254,24 @@
 
 <script>
 const ORDERS_KEY = 'badgeCalcOrders';
-const STATUS_LABELS = { in_progress: 'กำลังดำเนินการ', shipped: 'จัดส่งแล้ว', paid: 'ได้รับเงินแล้ว', cancelled: 'ยกเลิก' };
+const ORDER_STATUS_LABELS = { in_progress: 'กำลังดำเนินการ', done: 'สำเร็จ', cancelled: 'ยกเลิก' };
+const PAYMENT_STATUS_LABELS = { paid: 'ได้รับเงินแล้ว', unpaid: 'ยังไม่ได้รับเงิน' };
+const SHIPPING_STATUS_LABELS = { shipped: 'จัดส่งแล้ว', not_shipped: 'ยังไม่จัดส่ง' };
 const BRANCH_LABELS = { navy: 'ทหารเรือ', army: 'ทหารบก', police: 'ตำรวจ', airforce: 'ทหารอากาศ' };
+
+function migrateOrder(o){
+  // Back-compat for orders saved before order/payment/shipping were split into separate fields.
+  if(!o.orderStatus) o.orderStatus = o.status === 'cancelled' ? 'cancelled' : 'in_progress';
+  if(!o.paymentStatus) o.paymentStatus = o.status === 'paid' ? 'paid' : 'unpaid';
+  if(!o.shippingStatus) o.shippingStatus = o.status === 'shipped' ? 'shipped' : 'not_shipped';
+  delete o.status;
+  return o;
+}
 
 function loadOrders(){
   try{
     const data = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    return Array.isArray(data) ? data : [];
+    return Array.isArray(data) ? data.map(migrateOrder) : [];
   }catch(e){ return []; }
 }
 function saveOrders(list){
@@ -248,8 +279,11 @@ function saveOrders(list){
 }
 
 let orders = loadOrders();
+saveOrders(orders); // persist migrated field names (orderStatus/paymentStatus/shippingStatus) right away
 let searchTerm = '';
-let statusFilter = 'all';
+let orderStatusFilter = 'all';
+let paymentStatusFilter = 'all';
+let shippingStatusFilter = 'all';
 let sortDesc = true;
 let editingId = null;
 let editDraft = null;
@@ -301,7 +335,7 @@ async function pullFromServer(showAlertOnError){
     if(showAlertOnError) alert('ซิงก์ไม่สำเร็จ: ' + (data && data.error ? data.error : 'ไม่ทราบสาเหตุ'));
     return false;
   }
-  orders = data.orders || [];
+  orders = (data.orders || []).map(migrateOrder);
   saveOrders(orders);
   statusEl.textContent = 'เชื่อมต่อ Google Sheets แล้ว (ซิงก์ล่าสุด ' +
     new Date().toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'}) + ')';
@@ -333,13 +367,13 @@ function formatDate(iso){
     ' ' + d.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'});
 }
 
-function updateStatus(id, status){
+function updateStatusField(id, field, value){
   const order = orders.find(o => o.id === id);
   if(!order) return;
-  order.status = status;
+  order[field] = value;
   saveOrders(orders);
   render();
-  if(syncUrl) callApi('update', {id: id, patch: {status: status}});
+  if(syncUrl) callApi('update', {id: id, patch: {[field]: value}});
 }
 
 function deleteOrder(id){
@@ -366,13 +400,17 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
   render();
 });
 
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    statusFilter = btn.dataset.status;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    render();
-  });
+document.getElementById('filterOrderStatus').addEventListener('change', (e) => {
+  orderStatusFilter = e.target.value;
+  render();
+});
+document.getElementById('filterPaymentStatus').addEventListener('change', (e) => {
+  paymentStatusFilter = e.target.value;
+  render();
+});
+document.getElementById('filterShippingStatus').addEventListener('change', (e) => {
+  shippingStatusFilter = e.target.value;
+  render();
 });
 
 const sortBtn = document.getElementById('sortBtn');
@@ -383,7 +421,9 @@ sortBtn.addEventListener('click', () => {
 });
 
 function matchesFilter(o){
-  if(statusFilter !== 'all' && o.status !== statusFilter) return false;
+  if(orderStatusFilter !== 'all' && o.orderStatus !== orderStatusFilter) return false;
+  if(paymentStatusFilter !== 'all' && o.paymentStatus !== paymentStatusFilter) return false;
+  if(shippingStatusFilter !== 'all' && o.shippingStatus !== shippingStatusFilter) return false;
   if(searchTerm && !(o.customerName || '').toLowerCase().includes(searchTerm)) return false;
   return true;
 }
@@ -403,7 +443,7 @@ function csvEscape(val){
 document.getElementById('exportBtn').addEventListener('click', () => {
   const list = getVisibleOrders();
   if(list.length === 0){ alert('ไม่มีรายการให้ส่งออก'); return; }
-  const rows = [['ลำดับ', 'วันที่', 'ชื่อลูกค้า', 'เบอร์โทร', 'ที่อยู่จัดส่ง', 'เหล่า', 'รายการสินค้า', 'ยอดรวม', 'สถานะ']];
+  const rows = [['ลำดับ', 'วันที่', 'ชื่อลูกค้า', 'เบอร์โทร', 'ที่อยู่จัดส่ง', 'เหล่า', 'รายการสินค้า', 'ยอดรวม', 'สถานะงาน', 'การชำระเงิน', 'การจัดส่ง']];
   list.forEach(o => {
     rows.push([
       o.seq,
@@ -414,7 +454,9 @@ document.getElementById('exportBtn').addEventListener('click', () => {
       o.branchLabel || BRANCH_LABELS[o.branch] || '',
       (o.items || []).map(it => it.name + ' x' + it.qty).join('; '),
       o.total,
-      STATUS_LABELS[o.status] || o.status
+      ORDER_STATUS_LABELS[o.orderStatus] || o.orderStatus,
+      PAYMENT_STATUS_LABELS[o.paymentStatus] || o.paymentStatus,
+      SHIPPING_STATUS_LABELS[o.shippingStatus] || o.shippingStatus
     ]);
   });
   const csv = rows.map(r => r.map(csvEscape).join(',')).join('\r\n');
@@ -493,7 +535,11 @@ function buildViewCard(o){
         '<span class="order-seq">#' + o.seq + '</span>' +
         '<span class="order-date">' + formatDate(o.createdAt) + '</span>' +
       '</div>' +
-      '<span class="status-badge ' + o.status + '">' + (STATUS_LABELS[o.status] || o.status) + '</span>' +
+      '<div class="badge-row">' +
+        '<span class="status-badge order-' + o.orderStatus + '">' + (ORDER_STATUS_LABELS[o.orderStatus] || o.orderStatus) + '</span>' +
+        '<span class="status-badge payment-' + o.paymentStatus + '">' + (PAYMENT_STATUS_LABELS[o.paymentStatus] || o.paymentStatus) + '</span>' +
+        '<span class="status-badge shipping-' + o.shippingStatus + '">' + (SHIPPING_STATUS_LABELS[o.shippingStatus] || o.shippingStatus) + '</span>' +
+      '</div>' +
     '</div>' +
     '<div class="order-body">' +
       (o.image ? '<img class="order-thumb" data-role="thumb" src="' + o.image + '" alt="">' : '') +
@@ -506,19 +552,32 @@ function buildViewCard(o){
       '</div>' +
     '</div>' +
     '<div class="order-actions">' +
-      '<select class="status-select" data-role="statusSelect">' +
+      '<select class="status-select" data-role="orderStatusSelect">' +
         '<option value="in_progress">กำลังดำเนินการ</option>' +
-        '<option value="shipped">จัดส่งแล้ว</option>' +
-        '<option value="paid">ได้รับเงินแล้ว</option>' +
+        '<option value="done">สำเร็จ</option>' +
         '<option value="cancelled">ยกเลิก</option>' +
+      '</select>' +
+      '<select class="status-select" data-role="paymentStatusSelect">' +
+        '<option value="unpaid">ยังไม่ได้รับเงิน</option>' +
+        '<option value="paid">ได้รับเงินแล้ว</option>' +
+      '</select>' +
+      '<select class="status-select" data-role="shippingStatusSelect">' +
+        '<option value="not_shipped">ยังไม่จัดส่ง</option>' +
+        '<option value="shipped">จัดส่งแล้ว</option>' +
       '</select>' +
       '<button class="icon-btn" data-role="editBtn" type="button">แก้ไข</button>' +
       '<button class="icon-btn danger" data-role="deleteBtn" type="button">ลบ</button>' +
     '</div>';
 
-  const select = card.querySelector('[data-role="statusSelect"]');
-  select.value = o.status;
-  select.addEventListener('change', () => updateStatus(o.id, select.value));
+  const orderStatusSelect = card.querySelector('[data-role="orderStatusSelect"]');
+  orderStatusSelect.value = o.orderStatus;
+  orderStatusSelect.addEventListener('change', () => updateStatusField(o.id, 'orderStatus', orderStatusSelect.value));
+  const paymentStatusSelect = card.querySelector('[data-role="paymentStatusSelect"]');
+  paymentStatusSelect.value = o.paymentStatus;
+  paymentStatusSelect.addEventListener('change', () => updateStatusField(o.id, 'paymentStatus', paymentStatusSelect.value));
+  const shippingStatusSelect = card.querySelector('[data-role="shippingStatusSelect"]');
+  shippingStatusSelect.value = o.shippingStatus;
+  shippingStatusSelect.addEventListener('change', () => updateStatusField(o.id, 'shippingStatus', shippingStatusSelect.value));
   card.querySelector('[data-role="editBtn"]').addEventListener('click', () => startEdit(o));
   card.querySelector('[data-role="deleteBtn"]').addEventListener('click', () => deleteOrder(o.id));
   const thumb = card.querySelector('[data-role="thumb"]');
@@ -536,7 +595,11 @@ function buildEditCard(o){
         '<span class="order-seq">#' + o.seq + '</span>' +
         '<span class="order-date">' + formatDate(o.createdAt) + '</span>' +
       '</div>' +
-      '<span class="status-badge ' + o.status + '">' + (STATUS_LABELS[o.status] || o.status) + '</span>' +
+      '<div class="badge-row">' +
+        '<span class="status-badge order-' + o.orderStatus + '">' + (ORDER_STATUS_LABELS[o.orderStatus] || o.orderStatus) + '</span>' +
+        '<span class="status-badge payment-' + o.paymentStatus + '">' + (PAYMENT_STATUS_LABELS[o.paymentStatus] || o.paymentStatus) + '</span>' +
+        '<span class="status-badge shipping-' + o.shippingStatus + '">' + (SHIPPING_STATUS_LABELS[o.shippingStatus] || o.shippingStatus) + '</span>' +
+      '</div>' +
     '</div>';
 
   card.innerHTML = topHtml +
@@ -608,17 +671,20 @@ function buildEditCard(o){
 
 function render(){
   const total = orders.length;
-  const counts = {in_progress: 0, shipped: 0, paid: 0, cancelled: 0};
+  const counts = {in_progress: 0, done: 0, cancelled: 0, paid: 0, shipped: 0};
   let revenue = 0;
   orders.forEach(o => {
-    counts[o.status] = (counts[o.status] || 0) + 1;
-    if(o.status !== 'cancelled') revenue += Number(o.total) || 0;
+    counts[o.orderStatus] = (counts[o.orderStatus] || 0) + 1;
+    if(o.paymentStatus === 'paid') counts.paid++;
+    if(o.shippingStatus === 'shipped') counts.shipped++;
+    if(o.orderStatus !== 'cancelled') revenue += Number(o.total) || 0;
   });
   document.getElementById('statTotal').textContent = total;
   document.getElementById('statProgress').textContent = counts.in_progress;
-  document.getElementById('statShipped').textContent = counts.shipped;
-  document.getElementById('statPaid').textContent = counts.paid;
+  document.getElementById('statDone').textContent = counts.done;
   document.getElementById('statCancelled').textContent = counts.cancelled;
+  document.getElementById('statPaid').textContent = counts.paid;
+  document.getElementById('statShipped').textContent = counts.shipped;
   document.getElementById('revenueTotal').textContent = fmt(revenue) + ' บาท';
 
   const filtered = getVisibleOrders();

@@ -414,7 +414,9 @@ function saveOrderRecord(nameVal, selected, total, imageDataUrl){
       items: selected.map(it => ({name: it.nameTag ? nameVal : it.name, price: it.price, qty: it.qty})),
       total: total,
       image: imageDataUrl,
-      status: 'in_progress'
+      orderStatus: 'in_progress',
+      paymentStatus: 'unpaid',
+      shippingStatus: 'not_shipped'
     };
     orders.push(order);
     localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));

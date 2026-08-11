@@ -8,7 +8,7 @@
 
 var SHEET_NAME = 'Orders';
 var IMAGE_FOLDER_NAME = 'BadgeCalcOrderImages';
-var HEADERS = ['id', 'seq', 'createdAt', 'branch', 'branchLabel', 'customerName', 'phone', 'address', 'items', 'total', 'imageUrl', 'status', 'updatedAt'];
+var HEADERS = ['id', 'seq', 'createdAt', 'branch', 'branchLabel', 'customerName', 'phone', 'address', 'items', 'total', 'imageUrl', 'orderStatus', 'paymentStatus', 'shippingStatus', 'updatedAt'];
 
 function doGet(e) {
   return jsonResponse({ ok: true, message: 'Badge Calculator Orders API' });
@@ -112,7 +112,8 @@ function createOrder(sheet, order) {
     order.branch || '', order.branchLabel || '',
     order.customerName || '', order.phone || '', order.address || '',
     JSON.stringify(order.items || []), order.total || 0, imageUrl,
-    order.status || 'in_progress', createdAt
+    order.orderStatus || 'in_progress', order.paymentStatus || 'unpaid', order.shippingStatus || 'not_shipped',
+    createdAt
   ]);
   return { ok: true, id: id, seq: seq, imageUrl: imageUrl };
 }
