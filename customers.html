@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>รายการลูกค้า</title>
+<style>
+  :root{
+    --bg:#f7f5f2;
+    --card:#ffffff;
+    --border:#e0ddd6;
+    --text:#2c2c2a;
+    --text-secondary:#6b6b66;
+    --text-muted:#9a9a94;
+    --accent:#9c2b2b;
+    --accent-text:#ffffff;
+    --radius:10px;
+    --status-progress:#b7791f;
+    --status-progress-bg:#fbf0da;
+    --status-shipped:#2b6cb0;
+    --status-shipped-bg:#e3edf9;
+    --status-paid:#2f855a;
+    --status-paid-bg:#e2f3ea;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    padding:24px 16px 60px;
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Segoe UI","Tahoma","Leelawadee UI","Noto Sans Thai",sans-serif;
+  }
+  .container{max-width:820px;margin:0 auto;}
+  .top-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .back-link{font-size:13px;color:var(--text-secondary);text-decoration:none;}
+  .back-link:hover{color:var(--accent);}
+  h1{font-size:18px;font-weight:600;margin:0 0 4px;text-align:center;}
+  .subtitle{font-size:13px;color:var(--text-secondary);text-align:center;margin:0 0 20px;}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px;}
+  .stat-card{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:10px 8px;text-align:center;
+  }
+  .stat-value{font-size:18px;font-weight:600;}
+  .stat-label{font-size:11px;color:var(--text-secondary);margin-top:2px;}
+  .revenue-card{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:14px;text-align:center;margin-bottom:18px;
+  }
+  .revenue-label{font-size:12px;color:var(--text-secondary);}
+  .revenue-value{font-size:24px;font-weight:700;color:var(--accent);margin-top:2px;}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center;}
+  #searchInput{
+    flex:1;min-width:160px;padding:10px 12px;border:1px solid var(--border);
+    border-radius:var(--radius);background:var(--card);color:var(--text);
+    font-size:14px;font-family:inherit;
+  }
+  #searchInput:focus{outline:none;border-color:var(--accent);}
+  .filter-btns{display:flex;flex-wrap:wrap;gap:6px;}
+  .filter-btn{
+    padding:8px 12px;border-radius:20px;border:1px solid var(--border);
+    background:var(--card);color:var(--text-secondary);font-size:12px;cursor:pointer;
+    font-family:inherit;white-space:nowrap;
+  }
+  .filter-btn.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+  .sort-btn{
+    padding:8px 12px;border-radius:20px;border:1px solid var(--border);
+    background:var(--card);color:var(--text-secondary);font-size:12px;cursor:pointer;font-family:inherit;
+  }
+  .order-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
+  .order-card{
+    background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;
+  }
+  .order-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .order-meta{display:flex;align-items:baseline;gap:8px;}
+  .order-seq{font-size:13px;font-weight:600;color:var(--text);}
+  .order-date{font-size:11px;color:var(--text-muted);}
+  .status-badge{
+    font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;white-space:nowrap;
+  }
+  .status-badge.in_progress{color:var(--status-progress);background:var(--status-progress-bg);}
+  .status-badge.shipped{color:var(--status-shipped);background:var(--status-shipped-bg);}
+  .status-badge.paid{color:var(--status-paid);background:var(--status-paid-bg);}
+  .order-body{display:flex;gap:12px;margin-bottom:10px;}
+  .order-thumb{
+    width:88px;height:88px;border-radius:8px;object-fit:cover;flex-shrink:0;
+    border:1px solid var(--border);cursor:pointer;background:var(--bg);
+  }
+  .order-info{flex:1;min-width:0;}
+  .order-name{font-size:15px;font-weight:600;margin:0 0 4px;word-break:break-word;}
+  .order-branch{font-size:12px;color:var(--text-secondary);margin:0 0 4px;}
+  .order-items{font-size:11px;color:var(--text-muted);margin:0 0 6px;word-break:break-word;}
+  .order-total{font-size:15px;font-weight:600;color:var(--accent);margin:0;}
+  .order-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .status-select{
+    flex:1;min-width:130px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
+    background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;
+  }
+  .icon-btn{
+    padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);
+    color:var(--text-secondary);font-size:12px;cursor:pointer;font-family:inherit;
+  }
+  .icon-btn:active{transform:scale(0.97);}
+  .icon-btn.danger{color:var(--accent);}
+  .empty-state{font-size:13px;color:var(--text-muted);text-align:center;padding:40px 0;}
+  .clear-all-row{text-align:center;margin-top:24px;}
+  .clear-all-row button{
+    font-size:12px;color:var(--text-muted);background:none;border:none;cursor:pointer;
+    text-decoration:underline;font-family:inherit;
+  }
+  .lightbox{
+    position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;
+    justify-content:center;padding:20px;z-index:100;
+  }
+  .lightbox[hidden]{display:none;}
+  .lightbox-inner{max-width:100%;max-height:100%;display:flex;flex-direction:column;gap:12px;align-items:center;}
+  .lightbox-inner img{max-width:100%;max-height:70vh;border-radius:8px;background:#fff;}
+  .lightbox-actions{display:flex;gap:10px;}
+  .lightbox-actions a, .lightbox-actions button{
+    padding:10px 16px;border-radius:var(--radius);border:1px solid var(--border);
+    background:var(--card);color:var(--text);font-size:13px;cursor:pointer;text-decoration:none;
+    font-family:inherit;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="top-nav">
+    <a class="back-link" href="index.html">← กลับไปหน้าเครื่องคิดราคา</a>
+  </div>
+  <h1>รายการลูกค้า</h1>
+  <p class="subtitle">รายการทั้งหมดจากการบันทึกภาพ เรียงตามลำดับที่บันทึก</p>
+
+  <div class="stats">
+    <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">ทั้งหมด</div></div>
+    <div class="stat-card"><div class="stat-value" id="statProgress">0</div><div class="stat-label">กำลังดำเนินการ</div></div>
+    <div class="stat-card"><div class="stat-value" id="statShipped">0</div><div class="stat-label">จัดส่งแล้ว</div></div>
+    <div class="stat-card"><div class="stat-value" id="statPaid">0</div><div class="stat-label">ได้รับเงินแล้ว</div></div>
+  </div>
+
+  <div class="revenue-card">
+    <div class="revenue-label">ยอดรวมทั้งหมด</div>
+    <div class="revenue-value" id="revenueTotal">0 บาท</div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="ค้นหาชื่อลูกค้า">
+    <button class="sort-btn" id="sortBtn" type="button">ใหม่ก่อน</button>
+  </div>
+  <div class="controls filter-btns">
+    <button class="filter-btn active" data-status="all" type="button">ทั้งหมด</button>
+    <button class="filter-btn" data-status="in_progress" type="button">กำลังดำเนินการ</button>
+    <button class="filter-btn" data-status="shipped" type="button">จัดส่งแล้ว</button>
+    <button class="filter-btn" data-status="paid" type="button">ได้รับเงินแล้ว</button>
+  </div>
+
+  <div id="orderList" class="order-list"></div>
+
+  <div class="clear-all-row">
+    <button id="clearAllBtn" type="button">ล้างรายการลูกค้าทั้งหมด</button>
+  </div>
+</div>
+
+<div id="lightbox" class="lightbox" hidden>
+  <div class="lightbox-inner">
+    <img id="lightboxImg" src="" alt="">
+    <div class="lightbox-actions">
+      <a id="lightboxDownload" download="order.png">ดาวน์โหลด</a>
+      <button id="lightboxClose" type="button">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ORDERS_KEY = 'badgeCalcOrders';
+const STATUS_LABELS = { in_progress: 'กำลังดำเนินการ', shipped: 'จัดส่งแล้ว', paid: 'ได้รับเงินแล้ว' };
+const BRANCH_LABELS = { navy: 'ทหารเรือ', army: 'ทหารบก', police: 'ตำรวจ', airforce: 'ทหารอากาศ' };
+
+function loadOrders(){
+  try{
+    const data = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    return Array.isArray(data) ? data : [];
+  }catch(e){ return []; }
+}
+function saveOrders(list){
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(list));
+}
+
+let orders = loadOrders();
+let searchTerm = '';
+let statusFilter = 'all';
+let sortDesc = true;
+
+function fmt(n){ return Math.round(n || 0).toLocaleString('th-TH'); }
+function formatDate(iso){
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'numeric'}) +
+    ' ' + d.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'});
+}
+
+function updateStatus(id, status){
+  const order = orders.find(o => o.id === id);
+  if(!order) return;
+  order.status = status;
+  saveOrders(orders);
+  render();
+}
+
+function deleteOrder(id){
+  if(!confirm('ลบรายการนี้หรือไม่?')) return;
+  orders = orders.filter(o => o.id !== id);
+  saveOrders(orders);
+  render();
+}
+
+document.getElementById('clearAllBtn').addEventListener('click', () => {
+  if(orders.length === 0) return;
+  if(!confirm('ล้างรายการลูกค้าทั้งหมดหรือไม่? ไม่สามารถย้อนกลับได้')) return;
+  orders = [];
+  saveOrders(orders);
+  render();
+});
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  searchTerm = e.target.value.trim().toLowerCase();
+  render();
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    statusFilter = btn.dataset.status;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  });
+});
+
+const sortBtn = document.getElementById('sortBtn');
+sortBtn.addEventListener('click', () => {
+  sortDesc = !sortDesc;
+  sortBtn.textContent = sortDesc ? 'ใหม่ก่อน' : 'เก่าก่อน';
+  render();
+});
+
+function matchesFilter(o){
+  if(statusFilter !== 'all' && o.status !== statusFilter) return false;
+  if(searchTerm && !(o.customerName || '').toLowerCase().includes(searchTerm)) return false;
+  return true;
+}
+
+function openLightbox(src){
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightboxDownload').href = src;
+  document.getElementById('lightbox').hidden = false;
+}
+document.getElementById('lightboxClose').addEventListener('click', () => {
+  document.getElementById('lightbox').hidden = true;
+});
+document.getElementById('lightbox').addEventListener('click', (e) => {
+  if(e.target.id === 'lightbox') document.getElementById('lightbox').hidden = true;
+});
+
+function buildCard(o){
+  const card = document.createElement('div');
+  card.className = 'order-card';
+  const itemsSummary = (o.items || []).map(it => it.name + ' ×' + it.qty).join(', ');
+  card.innerHTML =
+    '<div class="order-top">' +
+      '<div class="order-meta">' +
+        '<span class="order-seq">#' + o.seq + '</span>' +
+        '<span class="order-date">' + formatDate(o.createdAt) + '</span>' +
+      '</div>' +
+      '<span class="status-badge ' + o.status + '">' + (STATUS_LABELS[o.status] || o.status) + '</span>' +
+    '</div>' +
+    '<div class="order-body">' +
+      (o.image ? '<img class="order-thumb" data-role="thumb" src="' + o.image + '" alt="">' : '') +
+      '<div class="order-info">' +
+        '<p class="order-name">' + (o.customerName || '-') + '</p>' +
+        '<p class="order-branch">เหล่า: ' + (o.branchLabel || BRANCH_LABELS[o.branch] || '-') + '</p>' +
+        (itemsSummary ? '<p class="order-items">' + itemsSummary + '</p>' : '') +
+        '<p class="order-total">' + fmt(o.total) + ' บาท</p>' +
+      '</div>' +
+    '</div>' +
+    '<div class="order-actions">' +
+      '<select class="status-select" data-role="statusSelect">' +
+        '<option value="in_progress">กำลังดำเนินการ</option>' +
+        '<option value="shipped">จัดส่งแล้ว</option>' +
+        '<option value="paid">ได้รับเงินแล้ว</option>' +
+      '</select>' +
+      '<button class="icon-btn danger" data-role="deleteBtn" type="button">ลบ</button>' +
+    '</div>';
+
+  const select = card.querySelector('[data-role="statusSelect"]');
+  select.value = o.status;
+  select.addEventListener('change', () => updateStatus(o.id, select.value));
+  card.querySelector('[data-role="deleteBtn"]').addEventListener('click', () => deleteOrder(o.id));
+  const thumb = card.querySelector('[data-role="thumb"]');
+  if(thumb) thumb.addEventListener('click', () => openLightbox(o.image));
+  return card;
+}
+
+function render(){
+  const total = orders.length;
+  const counts = {in_progress: 0, shipped: 0, paid: 0};
+  let revenue = 0;
+  orders.forEach(o => {
+    counts[o.status] = (counts[o.status] || 0) + 1;
+    revenue += Number(o.total) || 0;
+  });
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statProgress').textContent = counts.in_progress;
+  document.getElementById('statShipped').textContent = counts.shipped;
+  document.getElementById('statPaid').textContent = counts.paid;
+  document.getElementById('revenueTotal').textContent = fmt(revenue) + ' บาท';
+
+  let filtered = orders.filter(matchesFilter);
+  filtered = filtered.slice().sort((a, b) => sortDesc ? b.seq - a.seq : a.seq - b.seq);
+
+  const list = document.getElementById('orderList');
+  list.innerHTML = '';
+  if(filtered.length === 0){
+    list.innerHTML = '<p class="empty-state">' + (orders.length === 0 ? 'ยังไม่มีรายการลูกค้า' : 'ไม่พบรายการที่ตรงกับเงื่อนไข') + '</p>';
+    return;
+  }
+  filtered.forEach(o => list.appendChild(buildCard(o)));
+}
+
+render();
+</script>
+</body>
+</html>

@@ -25,6 +25,9 @@
     font-family:"Segoe UI","Tahoma","Leelawadee UI","Noto Sans Thai",sans-serif;
   }
   .container{max-width:820px;margin:0 auto;}
+  .top-nav{text-align:right;margin-bottom:12px;}
+  .customers-link{font-size:13px;color:var(--text-secondary);text-decoration:none;}
+  .customers-link:hover{color:var(--accent);}
   h1{font-size:18px;font-weight:600;margin:0 0 20px;text-align:center;}
   .field{margin-bottom:20px;}
   label{display:block;font-size:13px;color:var(--text-secondary);margin-bottom:6px;}
@@ -197,6 +200,9 @@
 </head>
 <body>
 <div class="container">
+  <div class="top-nav">
+    <a class="customers-link" href="customers.html">📋 รายการลูกค้า</a>
+  </div>
   <div class="field">
     <label>เลือกเหล่า</label>
     <select id="branchSelect" class="branch-select">
@@ -355,6 +361,35 @@ const branchStore = {
 let currentBranch = 'navy';
 let items = branchStore[currentBranch].items;
 let counter = branchStore[currentBranch].counter;
+
+const ORDERS_KEY = 'badgeCalcOrders';
+const ORDER_SEQ_KEY = 'badgeCalcOrderSeq';
+const BRANCH_LABELS = {navy:'ทหารเรือ', army:'ทหารบก', police:'ตำรวจ', airforce:'ทหารอากาศ'};
+
+function saveOrderRecord(nameVal, selected, total, imageDataUrl){
+  try{
+    const orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    const seq = Number(localStorage.getItem(ORDER_SEQ_KEY) || '0') + 1;
+    orders.push({
+      id: Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+      seq: seq,
+      createdAt: new Date().toISOString(),
+      branch: currentBranch,
+      branchLabel: BRANCH_LABELS[currentBranch] || currentBranch,
+      customerName: nameVal,
+      items: selected.map(it => ({name: it.nameTag ? nameVal : it.name, price: it.price, qty: it.qty})),
+      total: total,
+      image: imageDataUrl,
+      status: 'in_progress'
+    });
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+    localStorage.setItem(ORDER_SEQ_KEY, String(seq));
+    return true;
+  }catch(e){
+    console.error(e);
+    return false;
+  }
+}
 
 function loadRankOptions(it, groupIdx){
   try{
@@ -985,6 +1020,14 @@ async function saveReceiptImage(){
     const qrY = y + qrGap;
     const qrX = (width - qrWidth) / 2;
     ctx.drawImage(qrImg, qrX, qrY, qrWidth, qrHeight);
+  }
+
+  if(nameVal !== '-' || selected.length > 0){
+    const imageDataUrl = canvas.toDataURL('image/png');
+    const saved = saveOrderRecord(nameVal, selected, computeTotal(), imageDataUrl);
+    if(!saved){
+      alert('บันทึกไปยังหน้ารายการลูกค้าไม่สำเร็จ (พื้นที่จัดเก็บเต็ม) แต่ภาพยังถูกดาวน์โหลดตามปกติ');
+    }
   }
 
   const filenameBase = customerNameInput.value.trim();
