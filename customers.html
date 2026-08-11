@@ -152,11 +152,13 @@
     padding:14px;margin-bottom:18px;
   }
   .sync-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
-  .sync-row input{
+  .sync-row input, .sync-row textarea{
     flex:1;min-width:160px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;
-    font-size:12px;font-family:inherit;background:var(--bg);color:var(--text);
+    font-size:12px;font-family:"SFMono-Regular",Consolas,monospace;background:var(--bg);color:var(--text);
+    resize:vertical;
   }
-  .sync-row input:focus{outline:none;border-color:var(--accent);}
+  .sync-row input:focus, .sync-row textarea:focus{outline:none;border-color:var(--accent);}
+  .sync-hint{font-size:11px;color:var(--text-muted);margin:0 0 8px;}
   .sync-status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .sync-status{font-size:12px;color:var(--text-muted);}
   .sync-status.connected{color:var(--status-paid);}
@@ -185,14 +187,16 @@
   <p class="subtitle">รายการทั้งหมดจากการบันทึกภาพ เรียงตามลำดับที่บันทึก</p>
 
   <div class="sync-card">
+    <p class="sync-hint">วางค่า Firebase config ที่คัดลอกจาก Firebase Console (Project settings → General → SDK setup and configuration)</p>
     <div class="sync-row">
-      <input type="text" id="syncUrlInput" placeholder="วาง URL ของ Google Apps Script Web App">
-      <button class="icon-btn" id="syncSaveBtn" type="button">บันทึก URL</button>
+      <textarea id="firebaseConfigInput" rows="4" placeholder='{ apiKey: "...", authDomain: "...", projectId: "...", ... }'></textarea>
+    </div>
+    <div class="sync-row">
+      <button class="icon-btn" id="firebaseConnectBtn" type="button">เชื่อมต่อ Firebase</button>
+      <button class="icon-btn" id="firebaseDisconnectBtn" type="button" hidden>เลิกเชื่อมต่อ</button>
     </div>
     <div class="sync-status-row">
       <span class="sync-status" id="syncStatus">ยังไม่ได้เชื่อมต่อ (ใช้ข้อมูลในเครื่องนี้เท่านั้น)</span>
-      <button class="icon-btn" id="syncNowBtn" type="button" hidden>ซิงก์ตอนนี้</button>
-      <button class="icon-btn" id="syncDisconnectBtn" type="button" hidden>เลิกเชื่อมต่อ</button>
     </div>
   </div>
 
@@ -252,6 +256,8 @@
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script>
 const ORDERS_KEY = 'badgeCalcOrders';
 const ORDER_STATUS_LABELS = { in_progress: 'กำลังดำเนินการ', done: 'สำเร็จ', cancelled: 'ยกเลิก' };
@@ -288,75 +294,93 @@ let sortDesc = true;
 let editingId = null;
 let editDraft = null;
 
-const SYNC_URL_KEY = 'badgeCalcSyncUrl';
-let syncUrl = localStorage.getItem(SYNC_URL_KEY) || '';
+const FIREBASE_CONFIG_KEY = 'badgeCalcFirebaseConfig';
+let firestoreDb = null;
+let unsubscribeOrders = null;
 
-function updateSyncUi(){
-  document.getElementById('syncUrlInput').value = syncUrl;
-  const statusEl = document.getElementById('syncStatus');
-  const nowBtn = document.getElementById('syncNowBtn');
-  const disconnectBtn = document.getElementById('syncDisconnectBtn');
-  if(syncUrl){
-    statusEl.textContent = 'เชื่อมต่อ Google Sheets แล้ว';
-    statusEl.className = 'sync-status connected';
-    nowBtn.hidden = false;
-    disconnectBtn.hidden = false;
-  } else {
-    statusEl.textContent = 'ยังไม่ได้เชื่อมต่อ (ใช้ข้อมูลในเครื่องนี้เท่านั้น)';
-    statusEl.className = 'sync-status';
-    nowBtn.hidden = true;
-    disconnectBtn.hidden = true;
-  }
-}
-
-async function callApi(action, payload){
-  if(!syncUrl) return null;
+function parseFirebaseConfigText(text){
+  const t = text.trim();
+  const start = t.indexOf('{');
+  const end = t.lastIndexOf('}');
+  if(start === -1 || end === -1 || end < start) throw new Error('รูปแบบไม่ถูกต้อง วางทั้งก้อน { ... } ที่คัดลอกจาก Firebase Console');
+  const objText = t.slice(start, end + 1);
+  let config;
   try{
-    const res = await fetch(syncUrl, {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify(Object.assign({action: action}, payload || {}))
-    });
-    return await res.json();
+    config = Function('"use strict"; return (' + objText + ')')();
   }catch(e){
-    console.error('sync error', e);
-    return {error: String(e)};
+    throw new Error('อ่านค่าไม่สำเร็จ: ' + e.message);
   }
+  if(!config || !config.projectId) throw new Error('ไม่พบ projectId ในค่าที่วาง');
+  return config;
 }
 
-async function pullFromServer(showAlertOnError){
+function updateSyncUi(connected, message){
   const statusEl = document.getElementById('syncStatus');
-  statusEl.textContent = 'กำลังซิงก์...';
-  statusEl.className = 'sync-status';
-  const data = await callApi('list');
-  if(!data || data.error){
-    statusEl.textContent = 'ซิงก์ไม่สำเร็จ (ตรวจสอบ URL หรืออินเทอร์เน็ต)';
-    statusEl.className = 'sync-status error';
-    if(showAlertOnError) alert('ซิงก์ไม่สำเร็จ: ' + (data && data.error ? data.error : 'ไม่ทราบสาเหตุ'));
-    return false;
+  const connectBtn = document.getElementById('firebaseConnectBtn');
+  const disconnectBtn = document.getElementById('firebaseDisconnectBtn');
+  const input = document.getElementById('firebaseConfigInput');
+  if(connected){
+    statusEl.textContent = message || 'เชื่อมต่อ Firebase แล้ว (ข้อมูลอัปเดตสดอัตโนมัติ)';
+    statusEl.className = 'sync-status connected';
+    connectBtn.hidden = true;
+    disconnectBtn.hidden = false;
+    input.disabled = true;
+  } else {
+    statusEl.textContent = message || 'ยังไม่ได้เชื่อมต่อ (ใช้ข้อมูลในเครื่องนี้เท่านั้น)';
+    statusEl.className = message && message.indexOf('ไม่สำเร็จ') !== -1 ? 'sync-status error' : 'sync-status';
+    connectBtn.hidden = false;
+    disconnectBtn.hidden = true;
+    input.disabled = false;
   }
-  orders = (data.orders || []).map(migrateOrder);
-  saveOrders(orders);
-  statusEl.textContent = 'เชื่อมต่อ Google Sheets แล้ว (ซิงก์ล่าสุด ' +
-    new Date().toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'}) + ')';
-  statusEl.className = 'sync-status connected';
-  render();
-  return true;
 }
 
-document.getElementById('syncSaveBtn').addEventListener('click', async () => {
-  const url = document.getElementById('syncUrlInput').value.trim();
-  syncUrl = url;
-  if(url) localStorage.setItem(SYNC_URL_KEY, url); else localStorage.removeItem(SYNC_URL_KEY);
-  updateSyncUi();
-  if(url) await pullFromServer(true);
+function connectFirebase(config){
+  let app;
+  try{
+    app = firebase.initializeApp(config, 'badgeCalc-' + Date.now());
+    firestoreDb = firebase.firestore(app);
+  }catch(e){
+    updateSyncUi(false, 'เชื่อมต่อไม่สำเร็จ: ' + e.message);
+    return;
+  }
+  if(unsubscribeOrders) unsubscribeOrders();
+  unsubscribeOrders = firestoreDb.collection('orders').onSnapshot((snapshot) => {
+    orders = snapshot.docs.map((d) => migrateOrder(Object.assign({id: d.id}, d.data())));
+    saveOrders(orders);
+    updateSyncUi(true);
+    render();
+  }, (err) => {
+    updateSyncUi(false, 'ซิงก์ไม่สำเร็จ: ' + err.message);
+  });
+}
+
+const storedFirebaseConfig = (() => {
+  try{ return JSON.parse(localStorage.getItem(FIREBASE_CONFIG_KEY) || 'null'); }catch(e){ return null; }
+})();
+if(storedFirebaseConfig){
+  document.getElementById('firebaseConfigInput').value = JSON.stringify(storedFirebaseConfig, null, 2);
+  connectFirebase(storedFirebaseConfig);
+}
+
+document.getElementById('firebaseConnectBtn').addEventListener('click', () => {
+  let config;
+  try{
+    config = parseFirebaseConfigText(document.getElementById('firebaseConfigInput').value);
+  }catch(e){
+    alert(e.message);
+    return;
+  }
+  localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(config));
+  connectFirebase(config);
 });
-document.getElementById('syncNowBtn').addEventListener('click', () => pullFromServer(true));
-document.getElementById('syncDisconnectBtn').addEventListener('click', () => {
-  if(!confirm('เลิกเชื่อมต่อ Google Sheets? (ข้อมูลในเครื่องนี้ยังอยู่)')) return;
-  syncUrl = '';
-  localStorage.removeItem(SYNC_URL_KEY);
-  updateSyncUi();
+
+document.getElementById('firebaseDisconnectBtn').addEventListener('click', () => {
+  if(!confirm('เลิกเชื่อมต่อ Firebase? (ข้อมูลในเครื่องนี้ยังอยู่)')) return;
+  if(unsubscribeOrders){ unsubscribeOrders(); unsubscribeOrders = null; }
+  firestoreDb = null;
+  localStorage.removeItem(FIREBASE_CONFIG_KEY);
+  document.getElementById('firebaseConfigInput').value = '';
+  updateSyncUi(false);
 });
 
 function fmt(n){ return Math.round(n || 0).toLocaleString('th-TH'); }
@@ -373,7 +397,7 @@ function updateStatusField(id, field, value){
   order[field] = value;
   saveOrders(orders);
   render();
-  if(syncUrl) callApi('update', {id: id, patch: {[field]: value}});
+  if(firestoreDb) firestoreDb.collection('orders').doc(id).update({[field]: value}).catch((e) => console.error('firestore update failed', e));
 }
 
 function deleteOrder(id){
@@ -381,10 +405,10 @@ function deleteOrder(id){
   orders = orders.filter(o => o.id !== id);
   saveOrders(orders);
   render();
-  if(syncUrl) callApi('delete', {id: id});
+  if(firestoreDb) firestoreDb.collection('orders').doc(id).delete().catch((e) => console.error('firestore delete failed', e));
 }
 
-document.getElementById('clearAllBtn').addEventListener('click', () => {
+document.getElementById('clearAllBtn').addEventListener('click', async () => {
   if(orders.length === 0) return;
   if(!confirm('ล้างรายการลูกค้าทั้งหมดหรือไม่? ไม่สามารถย้อนกลับได้')) return;
   orders = [];
@@ -392,7 +416,14 @@ document.getElementById('clearAllBtn').addEventListener('click', () => {
   editDraft = null;
   saveOrders(orders);
   render();
-  if(syncUrl) callApi('clearAll');
+  if(firestoreDb){
+    try{
+      const snap = await firestoreDb.collection('orders').get();
+      const batch = firestoreDb.batch();
+      snap.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    }catch(e){ console.error('firestore clearAll failed', e); }
+  }
 });
 
 document.getElementById('searchInput').addEventListener('input', (e) => {
@@ -514,11 +545,11 @@ function saveEdit(id){
   editingId = null;
   editDraft = null;
   render();
-  if(syncUrl){
-    callApi('update', {id: id, patch: {
+  if(firestoreDb){
+    firestoreDb.collection('orders').doc(id).update({
       customerName: order.customerName, phone: order.phone, address: order.address,
       items: order.items, total: order.total
-    }});
+    }).catch((e) => console.error('firestore update failed', e));
   }
 }
 
@@ -700,9 +731,7 @@ function render(){
   });
 }
 
-updateSyncUi();
 render();
-if(syncUrl) pullFromServer(false);
 </script>
 </body>
 </html>
