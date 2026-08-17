@@ -336,6 +336,7 @@ function makeNavyItems(){
     {id:'i4', name:'เหรียญแม่นปืน', price:200, qty:0, side:'left', group:null, image:'medal-maskman.jpg'},
     {id:'i5', name:'รีคอน', price:250, qty:0, side:'left', group:null, image:'recon.jpg'},
     {id:'i6', name:'ป้ายชื่อ', price:150, qty:0, side:'left', group:null, image:null, nameTag:true},
+    {id:'i18', name:'เข็มผู้การ', price:150, qty:0, side:'right', group:null, image:'Captain.jpg'},
     {id:'i7', name:'ร่ม', price:300, qty:0, side:'right', group:null, image:'parachute.jpg'},
     {id:'i8', name:'ปฏิบัติงานใต้น้ำ', price:300, qty:0, side:'right', group:null, image:'underwater.jpg'},
     {id:'i12', name:'นักรบผิวน้ำ', price:250, qty:0, side:'right', group:null, image:'surface.jpg'},
@@ -362,6 +363,7 @@ function makeBranchItems(prefix, includeMarksman){
     {id:prefix+'-i6', name:'ป้ายชื่อ', price:150, qty:0, side:'left', group:null, image:null, nameTag:true},
     {id:prefix+'-i10', name:'แถว', price:225, qty:0, side:'left', group:null, image:null}
   );
+  list.push({id:prefix+'-i17', name:'เข็มผู้การ', price:150, qty:0, side:'right', group:null, image:'Captain.jpg'});
   if(includeMarksman){
     list.push({id:prefix+'-i16', name:'ร่มตำรวจ', price:300, qty:0, side:'right', group:null, image:'parachute-police.png'});
   }
@@ -373,7 +375,7 @@ function makeBranchItems(prefix, includeMarksman){
 }
 
 const branchStore = {
-  navy: {items: makeNavyItems(), counter: 17, customerName: '', customerPhone: '', customerAddress: ''},
+  navy: {items: makeNavyItems(), counter: 19, customerName: '', customerPhone: '', customerAddress: ''},
   army: {items: makeBranchItems('army'), counter: 100, customerName: '', customerPhone: '', customerAddress: ''},
   police: {items: makeBranchItems('police', true), counter: 100, customerName: '', customerPhone: '', customerAddress: ''},
   airforce: {items: makeBranchItems('airforce'), counter: 100, customerName: '', customerPhone: '', customerAddress: ''}
